@@ -1,13 +1,24 @@
-import { ScreenContent } from 'components/ScreenContent';
-import { StatusBar } from 'expo-status-bar';
+import "./global.css";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { PaperProvider } from "react-native-paper";
+import { ThemeProvider, useTheme } from "./frontend/context/ThemeContext";
+import StackNavigator from "./frontend/navigator/StackNavigator";
 
-import './global.css';
+function AppContent() {
+  const { theme } = useTheme();
+  return (
+    <PaperProvider theme={theme}>
+      <StackNavigator />
+    </PaperProvider>
+  );
+}
 
 export default function App() {
   return (
-    <>
-      <ScreenContent title="Home" path="App.tsx"></ScreenContent>
-      <StatusBar style="auto" />
-    </>
+    <SafeAreaProvider>
+      <ThemeProvider>
+        <AppContent />
+      </ThemeProvider>
+    </SafeAreaProvider>
   );
 }
