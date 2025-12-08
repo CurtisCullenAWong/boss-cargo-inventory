@@ -6,10 +6,9 @@ import {
 } from 'react-native-paper';
 import { colorConfigLight, colorConfigDark } from './colorConfig';
 
-// UPDATED: Set font family to Arial
 const customFonts = {
-  bold: 'Arial',
-  regular: 'Sans-Serif', 
+  bold: "Onest-Bold",
+  regular: "Onest-Regular",
 };
 
 export const getFontFamily = () => {
