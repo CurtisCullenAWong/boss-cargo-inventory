@@ -5,6 +5,7 @@ import { PaperProvider } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { ThemeProvider, useTheme } from "./frontend/context/ThemeContext";
+import { SidebarProvider } from "./frontend/context/SidebarContext";
 import StackNavigator from "./frontend/navigator/StackNavigator";
 
 SplashScreen.preventAutoHideAsync();
@@ -13,15 +14,17 @@ function AppContent() {
   const { theme } = useTheme();
   return (
     <PaperProvider theme={theme}>
-      <StackNavigator />
+      <SidebarProvider>
+        <StackNavigator />
+      </SidebarProvider>
     </PaperProvider>
   );
 }
 
 export default function App() {
   const [fontsLoaded, fontError] = useFonts({
-    "Onest-Regular": require("./assets/fonts/Onest-Regular.ttf"),
-    "Onest-Bold": require("./assets/fonts/Onest-Bold.ttf"),
+    "Lato-Regular": require("./assets/fonts/Lato-Regular.ttf"),
+    "Lato-Bold": require("./assets/fonts/Lato-Bold.ttf"),
   });
 
   useEffect(() => {

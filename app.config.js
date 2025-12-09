@@ -1,9 +1,12 @@
+import 'dotenv/config';
+
 export default ({ config }) => ({
   ...config,
   expo: {
-    name: "Boss Cargo Inventory",
-    slug: "boss-cargo-inventory",
-    version: "1.0.0",
+    name: process.env.APP_NAME,
+    slug: process.env.SLUG,
+    version: process.env.VERSION,
+    scheme: "bosscargo",
 
     web: {
       favicon: "./assets/favicon.png",

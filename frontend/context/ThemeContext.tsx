@@ -1,8 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
-import { Appearance, useColorScheme, Platform } from 'react-native';
-import { lightTheme, darkTheme, type MD3Theme } from '../themes/paperTheme';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+} from "react";
+import { Appearance, useColorScheme, Platform } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { lightTheme, darkTheme, type MD3Theme } from "../themes/paperTheme";
 
-export type ThemeMode = 'auto' | 'light' | 'dark';
+export type ThemeMode = "auto" | "light" | "dark";
 
 interface ThemeContextType {
   themeMode: ThemeMode;
@@ -14,112 +21,120 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const useTheme = () => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error('useTheme must be used within ThemeProvider');
-  }
-  return context;
+  const ctx = useContext(ThemeContext);
+  if (!ctx) throw new Error("useTheme must be used within ThemeProvider");
+  return ctx;
 };
 
 interface ThemeProviderProps {
   children: React.ReactNode;
 }
 
-// Helper function to detect system theme on web
-const getWebSystemTheme = (): 'light' | 'dark' => {
-  if (Platform.OS === 'web' && typeof window !== 'undefined' && window.matchMedia) {
-    try {
-      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-      return mediaQuery.matches ? 'dark' : 'light';
-    } catch {
-      return 'light';
-    }
+// --- Utility: get system theme for Web ---
+const getWebSystemTheme = () => {
+  if (Platform.OS !== "web") return null;
+
+  if (typeof window !== "undefined" && window.matchMedia) {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light";
   }
-  return 'light';
+  return "light";
 };
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const systemColorScheme = useColorScheme();
-  const [themeMode, setThemeMode] = useState<ThemeMode>('auto');
-  const [currentSystemScheme, setCurrentSystemScheme] = useState<string | null | undefined>(
-    Platform.OS === 'web' ? getWebSystemTheme() : Appearance.getColorScheme()
+  const fallbackScheme = useColorScheme();
+  const [systemScheme, setSystemScheme] = useState(
+    Platform.OS === "web" ? getWebSystemTheme() : Appearance.getColorScheme()
   );
 
-  // Listen for system theme changes
+  // --- 1. Load saved theme on startup ---
+  const [themeMode, setThemeMode] = useState<ThemeMode>("auto");
+  const [loaded, setLoaded] = useState(false);
+
   useEffect(() => {
-    if (Platform.OS === 'web') {
-      // Web: Use matchMedia API
-      if (typeof window !== 'undefined' && window.matchMedia) {
-        try {
-          const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-          
-          const handleChange = (e: MediaQueryListEvent) => {
-            setCurrentSystemScheme(e.matches ? 'dark' : 'light');
-          };
+    const loadTheme = async () => {
+      try {
+        let stored: string | null = null;
 
-          // Set initial value
-          setCurrentSystemScheme(mediaQuery.matches ? 'dark' : 'light');
-
-          // Listen for changes
-          if (mediaQuery.addEventListener) {
-            mediaQuery.addEventListener('change', handleChange);
-            return () => {
-              mediaQuery.removeEventListener('change', handleChange);
-            };
-          } else if (mediaQuery.addListener) {
-            // Fallback for older browsers
-            mediaQuery.addListener(handleChange);
-            return () => {
-              if (mediaQuery.removeListener) {
-                mediaQuery.removeListener(handleChange);
-              }
-            };
-          }
-        } catch {
-          // If matchMedia fails, fallback to light
-          setCurrentSystemScheme('light');
+        if (Platform.OS === "web") {
+          stored = localStorage.getItem("user-theme-mode");
+        } else {
+          stored = await AsyncStorage.getItem("user-theme-mode");
         }
+
+        if (stored === "light" || stored === "dark" || stored === "auto") {
+          setThemeMode(stored);
+        }
+      } catch (e) {
+        console.warn("Failed to load theme:", e);
       }
-    } else {
-      // Native: Use Appearance API
-      const initialColorScheme = Appearance.getColorScheme();
-      setCurrentSystemScheme(initialColorScheme);
 
-      const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-        setCurrentSystemScheme(colorScheme);
-      });
+      setLoaded(true);
+    };
 
-      return () => {
-        subscription.remove();
-      };
-    }
+    loadTheme();
   }, []);
 
-  // Determine if we should use dark theme
-  const isDark = useMemo(() => {
-    if (themeMode === 'auto') {
-      // Use the current system scheme, fallback to useColorScheme hook
-      const scheme = currentSystemScheme ?? systemColorScheme;
-      return scheme === 'dark';
+  // --- 2. Save theme whenever it changes ---
+  const saveTheme = async (mode: ThemeMode) => {
+    try {
+      if (Platform.OS === "web") {
+        localStorage.setItem("user-theme-mode", mode);
+      } else {
+        await AsyncStorage.setItem("user-theme-mode", mode);
+      }
+    } catch (e) {
+      console.warn("Failed to save theme:", e);
     }
-    return themeMode === 'dark';
-  }, [themeMode, currentSystemScheme, systemColorScheme]);
+  };
 
-  // Get the appropriate theme
-  const theme = useMemo(() => {
-    return isDark ? darkTheme : lightTheme;
-  }, [isDark]);
+  const handleSetThemeMode = (mode: ThemeMode) => {
+    setThemeMode(mode);
+    saveTheme(mode);
+  };
+
+  // --- 3. Listen for OS theme changes ---
+  useEffect(() => {
+    if (Platform.OS === "web") {
+      const media = window.matchMedia?.("(prefers-color-scheme: dark)");
+      if (!media) return;
+
+      const onChange = (e: MediaQueryListEvent) =>
+        setSystemScheme(e.matches ? "dark" : "light");
+
+      media.addEventListener?.("change", onChange);
+      return () => media.removeEventListener?.("change", onChange);
+    }
+
+    const sub = Appearance.addChangeListener(({ colorScheme }) =>
+      setSystemScheme(colorScheme)
+    );
+    return () => sub.remove();
+  }, []);
+
+  // --- 4. Compute dark mode state ---
+  const isDark = useMemo(() => {
+    if (themeMode === "auto")
+      return (systemScheme ?? fallbackScheme) === "dark";
+    return themeMode === "dark";
+  }, [themeMode, systemScheme, fallbackScheme]);
+
+  const theme = isDark ? darkTheme : lightTheme;
 
   const value = useMemo(
     () => ({
       themeMode,
-      setThemeMode,
+      setThemeMode: handleSetThemeMode,
       theme,
       isDark,
     }),
     [themeMode, theme, isDark]
   );
 
-  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
-};
+  if (!loaded) return null;
 
+  return (
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
+  );
+};

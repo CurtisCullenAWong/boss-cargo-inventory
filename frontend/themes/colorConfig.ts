@@ -31,24 +31,93 @@ onSurfaceVariant — Text or icon color used for elements on surface variant bac
 outline — The color used for borders and dividers, providing subtle separation between UI elements.
 */
 
+// =======================================
+//  Brand Base Tokens
+// =======================================
+const BASE = {
+    lightGold: '#FEE000',     // Primary brand color
+    sandGold:  '#FDEE7E',     // Secondary / supporting
+    darkGray:  '#292929',     // Main neutral (dark)
+    midGray:   '#787171',     // Secondary neutral
+};
+
+// =======================================
+//  Light Color Scheme
+// =======================================
 export const colorConfigLight = {
-    primary: '#FB8C00', onPrimary: '#FFFFFF', primaryContainer: '#FFE0B2', onPrimaryContainer: '#4E2B00',
-    secondary: '#FFA726', onSecondary: '#FFFFFF', secondaryContainer: '#FFECB3', onSecondaryContainer: '#4E2B00',
-    tertiary: '#FFB74D', onTertiary: '#FFFFFF', tertiaryContainer: '#FFF3E0', onTertiaryContainer: '#4E2B00',
-    error: '#D32F2F', onError: '#FFFFFF', errorContainer: '#F9DEDC', onErrorContainer: '#5B1212',
-    background: '#FFF8F1', onBackground: '#1A1A1A', surface: '#FFFFFF', onSurface: '#1A1A1A',
-    surfaceVariant: '#FFE5CC', onSurfaceVariant: '#664400',
-    outline: '#CC9900',
-}
+    // Primary
+    primary:            BASE.lightGold,
+    onPrimary:          BASE.darkGray,
+    primaryContainer:   BASE.sandGold,
+    onPrimaryContainer: BASE.darkGray,
+
+    // Secondary
+    secondary:            BASE.sandGold,
+    onSecondary:          BASE.darkGray,
+    secondaryContainer:   '#FFF9C2',     
+    onSecondaryContainer: BASE.darkGray,
+
+    // Tertiary (variant of primary)
+    tertiary:            BASE.lightGold,
+    onTertiary:          BASE.darkGray,
+    tertiaryContainer:   '#FFF4A6',     
+    onTertiaryContainer: BASE.darkGray,
+
+    // Error (kept red for accessibility)
+    error:               '#D32F2F',
+    onError:             '#FFFFFF',
+    errorContainer:      '#F9DEDC',
+    onErrorContainer:    '#5B1212',
+    // Surfaces
+    background:          '#FFFEF7',      
+    onBackground:        BASE.darkGray,
+    surface:             '#FFFFFF',
+    onSurface:           BASE.darkGray,
+    surfaceVariant:      '#FAF4D7',      
+    onSurfaceVariant:    BASE.midGray,
+    // Outline / borders
+    outline:             BASE.midGray,
+};
 
 
+// =======================================
+//  Dark Color Scheme
+// =======================================
 export const colorConfigDark = {
-    primary: '#FFB74D', onPrimary: '#3E1F00', primaryContainer: '#FF9800', onPrimaryContainer: '#FFF3E0',
-    secondary: '#FFA726', onSecondary: '#3E1F00', secondaryContainer: '#FFB74D', onSecondaryContainer: '#FFF3E0',
-    tertiary: '#FFCC80', onTertiary: '#3E1F00', tertiaryContainer: '#FFB74D', onTertiaryContainer: '#FFF3E0',
-    error: '#EF5350', onError: '#370000', errorContainer: '#8C1D18', onErrorContainer: '#F9DEDC',
-    background: '#2B1B0B', onBackground: '#FFEFD5',
-    surface: '#3E2723', onSurface: '#FFEFD5',
-    surfaceVariant: '#5D4037', onSurfaceVariant: '#D7CCC8',
-    outline: '#B36B00',
-}
+    // Primary
+    primary:            '#FEE85A',      
+    onPrimary:          BASE.darkGray,
+    primaryContainer:   '#C7B200',      
+    onPrimaryContainer: '#FFF9D9',
+
+    // Secondary
+    secondary:            BASE.sandGold,
+    onSecondary:          BASE.darkGray,
+    secondaryContainer:   '#C7B763',    
+    onSecondaryContainer: '#FFF9D9',
+
+    // Tertiary (variant)
+    tertiary:            '#FEE85A',
+    onTertiary:          BASE.darkGray,
+    tertiaryContainer:   '#C7B200',
+    onTertiaryContainer: '#FFF9D9',
+
+    // Error
+    error:               '#EF5350',
+    onError:             '#370000',
+    errorContainer:      '#8C1D18',
+    onErrorContainer:    '#F9DEDC',
+
+    // Surfaces
+    background:          '#1A1A1A',     
+    onBackground:        '#F2F2F2',
+
+    surface:             BASE.darkGray,
+    onSurface:           '#F2F2F2',
+
+    surfaceVariant:      '#3A3A3A',
+    onSurfaceVariant:    '#C0C0C0',
+
+    // Outline
+    outline:             BASE.midGray,
+};

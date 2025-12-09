@@ -7,8 +7,8 @@ import {
 import { colorConfigLight, colorConfigDark } from './colorConfig';
 
 const customFonts = {
-  bold: "Onest-Bold",
-  regular: "Onest-Regular",
+  bold: "Lato-Bold",
+  regular: "Lato-Regular",
 };
 
 export const getFontFamily = () => {
@@ -113,3 +113,5 @@ export const darkTheme: MD3Theme = {
   },
   fonts: configureFonts({ config: fontConfig }),
 };
+
+export { MD3Theme };

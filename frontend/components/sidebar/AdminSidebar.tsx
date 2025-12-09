@@ -9,19 +9,19 @@ import {
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
-import { 
-  useTheme, 
-  IconButton, 
-  Text, 
-  TouchableRipple, 
-  SegmentedButtons 
+import {
+  useTheme,
+  IconButton,
+  Text,
+  TouchableRipple,
+  SegmentedButtons
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme as useAppTheme, type ThemeMode } from '../../context/ThemeContext';
+import { useSidebarContext } from '../../context/SidebarContext';
 
 // --- 1. CONFIGURATION ---
-const APP_NAME = "Boss Cargo Inventory";
 
 export type SidebarConfigItem = {
   key: string;
@@ -33,24 +33,21 @@ export type SidebarConfigItem = {
 
 export const SIDEBAR_CONFIG: SidebarConfigItem[] = [
   { key: 'Dashboard', label: 'Dashboard', icon: 'view-dashboard', position: 'top' },
-  { key: 'Scan', label: 'Scan Item', icon: 'barcode-scan', position: 'top' },
-  { 
-    key: 'Reports', label: 'Reports', icon: 'file-chart', position: 'top',
-    children: [
-      { key: 'Reports/Sales', label: 'Sales Report', icon: 'chart-line', position: 'top' },
-      { key: 'Reports/Traffic', label: 'Traffic Stats', icon: 'chart-bar', position: 'top' },
-      { key: 'Reports/Performance', label: 'Performance', icon: 'speedometer', position: 'top' },
-    ]
-  },
-  { 
+  { key: 'Purchase Request', label: 'Purchase Request', icon: 'cash', position: 'top' },
+  { key: 'Supplier List', label: 'Supplier List', icon: 'account-group', position: 'top', },
+  { key: 'Purchase Order', label: 'Purchase Order', icon: 'cart', position: 'top' },
+  { key: 'Receiving Report', label: 'Receiving Report', icon: 'file-document-check', position: 'top' },
+  { key: 'Issuance Report', label: 'Issuance Report', icon: 'file-document-alert', position: 'top' },
+  { key: 'Returned Items', label: 'Returned Items', icon: 'archive-arrow-up', position: 'top' },
+  {
     key: 'Inventory', label: 'Inventory', icon: 'clipboard-list', position: 'top',
     children: [
-        { key: 'Inventory/List', label: 'All Items', icon: 'format-list-bulleted', position: 'top' },
-        { key: 'Inventory/LowStock', label: 'Low Stock', icon: 'alert-circle-outline', position: 'top' },
+      { key: 'Items List', label: 'Items List', icon: 'format-list-bulleted', position: 'top' },
+      { key: 'Fix Asset', label: 'Fix Asset', icon: 'cube', position: 'top' },
+      { key: 'Consumable Asset', label: 'Consumable Asset', icon: 'package-variant', position: 'top' },
     ]
   },
-  { key: 'Orders', label: 'Orders', icon: 'cart', position: 'top' }, 
-  { key: 'Users', label: 'Users', icon: 'account-group', position: 'top' },
+  { key: 'User Management', label: 'User Management', icon: 'account-group', position: 'top' },
   { key: 'Logout', label: 'Logout', icon: 'logout', position: 'bottom' },
 ];
 
@@ -64,10 +61,15 @@ interface SidebarProps {
   footer?: React.ReactNode;
 }
 
+// --- CONSTANTS FOR LAYOUT ---
+const ITEM_HEIGHT = 36;
+const ITEM_MARGIN = 2;
+const ITEM_TOTAL_HEIGHT = ITEM_HEIGHT + ITEM_MARGIN;
+
 // --- 2. MENU ITEMS & GROUPS ---
 
-const SidebarItem = React.memo(({ 
-  icon, label, isMinimized, isActive, onPress, isChild, hasChildren, animatedIconStyle, expandAnim 
+const SidebarItem = React.memo(({
+  icon, label, isMinimized, isActive, onPress, isChild, hasChildren, animatedIconStyle, expandAnim
 }: {
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
@@ -76,28 +78,26 @@ const SidebarItem = React.memo(({
   onPress: () => void;
   isChild?: boolean;
   hasChildren?: boolean;
-  animatedIconStyle?: any; 
+  animatedIconStyle?: any;
   expandAnim: Animated.Value;
 }) => {
   const theme = useTheme();
-  
+
   const bgColor = isActive ? theme.colors.secondaryContainer : 'transparent';
   const textColor = isActive ? theme.colors.onSecondaryContainer : (isChild ? theme.colors.onSurfaceVariant : theme.colors.onSurface);
-  
-  // Layout logic for minimized vs regular state
-  // Note: We keep padding even when minimized, but reduce it, to allow animation interpolation if needed, 
-  // but simpler to switch classes. The overflow hidden ensures text doesn't leak during transition.
-  const wrapperClasses = isMinimized ? 'items-center px-0' : 'px-3';
-  
-  let rippleClasses = isMinimized 
-    ? 'w-12 justify-center px-0' 
-    : 'w-full justify-start pr-4 ';
+
+  // Adjusted padding for compactness
+  const wrapperClasses = isMinimized ? 'items-center px-0' : 'px-2';
+
+  let rippleClasses = isMinimized
+    ? 'w-9 justify-center px-0' // slightly smaller width in minimized
+    : 'w-full justify-start pr-3';
 
   if (!isMinimized) {
-    rippleClasses += isChild ? 'pl-12' : 'pl-4';
+    // Reduced indentation: pl-10 -> pl-8, pl-3 -> pl-2
+    rippleClasses += isChild ? ' pl-8' : ' pl-2';
   }
 
-  // Opacity Animation: Fade out text immediately when shrinking (1 -> 0.4), Fade in late when growing (0.4 -> 1)
   const textOpacity = expandAnim.interpolate({
     inputRange: [0, 0.4, 1],
     outputRange: [0, 0, 1],
@@ -105,42 +105,43 @@ const SidebarItem = React.memo(({
   });
 
   return (
-    <View className={`mb-1 ${wrapperClasses}`}>
+    <View className={`mb-[2px] ${wrapperClasses}`}>
       <TouchableRipple
         onPress={onPress} borderless
         style={{ backgroundColor: bgColor, overflow: 'hidden' }}
-        className={`h-12 rounded-full flex-row items-center ${rippleClasses}`}
+        // Changed h-10 (40px) to h-9 (36px)
+        className={`h-9 rounded-md flex-row items-center ${rippleClasses}`}
       >
         <>
           {(icon || !isChild) && (
-            <View className={isMinimized ? '' : 'mr-4'}>
-              <MaterialCommunityIcons 
-                name={icon || 'circle-small'} 
-                size={isChild ? 20 : 24} 
-                color={isActive ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant} 
+            <View className={isMinimized ? '' : 'mr-2'}>
+              <MaterialCommunityIcons
+                name={icon || 'circle-small'}
+                size={isChild ? 16 : 18} // Slightly smaller icons (18 -> 16, 20 -> 18)
+                color={isActive ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant}
               />
             </View>
           )}
-          <Animated.View 
-            style={{ 
-                flex: 1, 
-                flexDirection: 'row', 
-                alignItems: 'center', 
-                opacity: textOpacity,
-                display: isMinimized ? 'none' : 'flex' 
+          <Animated.View
+            style={{
+              flex: 1,
+              flexDirection: 'row',
+              alignItems: 'center',
+              opacity: textOpacity,
+              display: isMinimized ? 'none' : 'flex'
             }}
           >
-            <Text 
-              variant={isChild ? "bodyMedium" : "titleSmall"} 
-              numberOfLines={1} 
-              className={`flex-1 ${isChild ? 'font-normal opacity-80' : 'font-semibold'}`}
-              style={{ color: textColor }}
+            <Text
+              variant="labelMedium" // Changed from labelLarge/bodyMedium to labelMedium for consistent compactness
+              numberOfLines={1}
+              className={`flex-1`}
+              style={{ color: textColor, fontSize: 13 }} // Explicit slightly smaller font
             >
               {label}
             </Text>
             {hasChildren && (
               <Animated.View style={animatedIconStyle}>
-                <MaterialCommunityIcons name="chevron-down" size={20} color={theme.colors.onSurfaceVariant} />
+                <MaterialCommunityIcons name="chevron-down" size={16} color={theme.colors.onSurfaceVariant} />
               </Animated.View>
             )}
           </Animated.View>
@@ -159,27 +160,30 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
   onClose: () => void;
   expandAnim: Animated.Value;
 }) => {
-  const [expanded, setExpanded] = useState(false);
-  const groupExpandAnim = useRef(new Animated.Value(0)).current; // Animation for the Accordion vertical expansion
+  const { expandedGroups, toggleGroup } = useSidebarContext();
+  const isExpanded = expandedGroups.has(item.key);
+  const groupExpandAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
   const isChildActive = useMemo(() => item.children?.some(child => child.key === activeRoute), [item.children, activeRoute]);
 
-  useEffect(() => { 
-    if (isChildActive) setExpanded(true); 
+  useEffect(() => {
+    if (isChildActive && !isExpanded) {
+      toggleGroup(item.key);
+    }
   }, [isChildActive]);
 
   useEffect(() => {
     Animated.timing(groupExpandAnim, {
-      toValue: expanded ? 1 : 0, duration: 300, useNativeDriver: false, easing: Easing.inOut(Easing.ease),
+      toValue: isExpanded ? 1 : 0, duration: 300, useNativeDriver: false, easing: Easing.inOut(Easing.ease),
     }).start();
-  }, [expanded]);
+  }, [isExpanded, groupExpandAnim]);
 
   const handlePress = () => {
     if (isMinimized) {
       onMinimizeToggle?.(false);
-      setTimeout(() => setExpanded(true), 100);
+      setTimeout(() => toggleGroup(item.key), 100);
     } else {
-      setExpanded(!expanded);
+      toggleGroup(item.key);
     }
   };
 
@@ -188,30 +192,32 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
   });
 
   const contentHeight = groupExpandAnim.interpolate({
-    inputRange: [0, 1], outputRange: [0, (item.children?.length || 0) * 52],
+    inputRange: [0, 1],
+    // UPDATED CALCULATION: uses ITEM_TOTAL_HEIGHT (38px) instead of 44px
+    outputRange: [0, (item.children?.length || 0) * ITEM_TOTAL_HEIGHT],
   });
 
   return (
     <View>
       <SidebarItem
-        icon={item.icon} 
-        label={item.label} 
+        icon={item.icon}
+        label={item.label}
         isMinimized={isMinimized}
-        isActive={isMinimized && isChildActive} 
+        isActive={isMinimized && isChildActive}
         onPress={handlePress}
-        hasChildren 
+        hasChildren
         animatedIconStyle={{ transform: [{ rotate: arrowRotation }] }}
         expandAnim={expandAnim}
       />
-      
+
       {!isMinimized && (
         <Animated.View style={{ height: contentHeight, overflow: 'hidden' }}>
           {item.children?.map(child => (
             <SidebarItem
-              key={child.key} 
-              label={child.label} 
+              key={child.key}
+              label={child.label}
               icon={child.icon}
-              isMinimized={false} 
+              isMinimized={false}
               isActive={activeRoute === child.key}
               isChild
               expandAnim={expandAnim}
@@ -252,37 +258,53 @@ const ThemeSwitcher = ({ expandAnim, isMinimized }: { expandAnim: Animated.Value
   const collapsedOpacity = expandAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0, 0] });
   const collapsedScale = expandAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0.8] });
 
+  // Reduced container height
+  const containerHeight = expandAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [50, 80] // Reduced from 56/100 to 50/80
+  });
+
   return (
-    <View 
-      className="border-t relative p-2"
-      style={{ borderColor: theme.colors.outlineVariant, minHeight: 110 }}
+    <Animated.View
+      className="relative overflow-hidden"
+      style={{
+        borderTopWidth: 1,
+        borderColor: theme.colors.outlineVariant,
+        height: containerHeight
+      }}
     >
-      
+
       {/* EXPANDED STATE */}
-      <Animated.View 
+      <Animated.View
         className="absolute w-full p-4 justify-center h-full"
         style={{ opacity: expandedOpacity, zIndex: isMinimized ? 0 : 1 }}
         pointerEvents={isMinimized ? 'none' : 'auto'}
       >
-        <Text variant="labelMedium" className="mb-3 opacity-60 font-semibold text-center">Select Theme</Text>
-        <SegmentedButtons
-          value={themeMode}
-          onValueChange={(val) => setThemeMode(val as ThemeMode)}
-          density="small"
-          buttons={[
-            { value: 'light', icon: 'white-balance-sunny', label: isWeb ? undefined : 'Light', showSelectedCheck: true },
-            { value: 'dark', icon: 'weather-night', label: isWeb ? undefined : 'Dark', showSelectedCheck: true },
-            { value: 'auto', icon: 'brightness-auto', label: isWeb ? undefined : 'Auto', showSelectedCheck: true },
-          ]}
-        />
+        <View className="pt-2 px-4 w-full items-center">
+          <Text
+            variant="bodyMedium"
+            style={{ color: theme.colors.onSurfaceVariant, marginBottom: 6 }}
+            >Switch Theme</Text>
+          <SegmentedButtons
+            value={themeMode}
+            onValueChange={(val) => setThemeMode(val as ThemeMode)}
+            density="small" // Small density is good
+            style={{ transform: [{ scale: 0.9 }] }} // Slightly scale down the buttons
+            buttons={[
+              { value: 'light', icon: 'white-balance-sunny', label: isWeb ? undefined : 'Light', showSelectedCheck: true },
+              { value: 'dark', icon: 'weather-night', label: isWeb ? undefined : 'Dark', showSelectedCheck: true },
+              { value: 'auto', icon: 'brightness-auto', label: isWeb ? undefined : 'Auto', showSelectedCheck: true },
+            ]}
+          />
+        </View>
       </Animated.View>
 
-      {/* MINIMIZED STATE (Centered) */}
-      <Animated.View 
-        style={{ 
+      {/* MINIMIZED STATE */}
+      <Animated.View
+        style={{
           opacity: collapsedOpacity,
           transform: [{ scale: collapsedScale }],
-          alignItems: 'center', 
+          alignItems: 'center',
           justifyContent: 'center',
           position: 'absolute',
           inset: 0,
@@ -293,10 +315,11 @@ const ThemeSwitcher = ({ expandAnim, isMinimized }: { expandAnim: Animated.Value
         <IconButton
           icon={getCycleIcon()}
           mode={themeMode === 'auto' ? 'outlined' : 'contained-tonal'}
-          selected onPress={cycleTheme} size={24}
+          selected onPress={cycleTheme} size={20}
+          style={{ margin: 0 }}
         />
       </Animated.View>
-    </View>
+    </Animated.View>
   );
 };
 
@@ -306,20 +329,21 @@ interface SidebarContentProps extends SidebarProps {
   expandAnim: Animated.Value;
 }
 
-const SidebarContent = ({ 
-  isMinimized, activeRoute, onNavigate, onMinimizeToggle, footer, onClose, expandAnim 
+const SidebarContent = ({
+  isMinimized, activeRoute, onNavigate, onMinimizeToggle, footer, onClose, expandAnim
 }: SidebarContentProps) => {
   const theme = useTheme();
-  
+
   const renderItem = (item: SidebarConfigItem) => {
+    // ... (keep existing renderItem logic)
     if (item.children?.length) {
       return (
-        <SidebarGroup 
-          key={item.key} 
-          item={item} 
-          isMinimized={!!isMinimized} 
-          activeRoute={activeRoute} 
-          onNavigate={onNavigate} 
+        <SidebarGroup
+          key={item.key}
+          item={item}
+          isMinimized={!!isMinimized}
+          activeRoute={activeRoute}
+          onNavigate={onNavigate}
           onMinimizeToggle={onMinimizeToggle}
           onClose={onClose}
           expandAnim={expandAnim}
@@ -328,59 +352,83 @@ const SidebarContent = ({
     }
     return (
       <SidebarItem
-        key={item.key} 
-        icon={item.icon} 
+        key={item.key}
+        icon={item.icon}
         label={item.label}
-        isMinimized={isMinimized} 
-        isActive={activeRoute === item.key} 
+        isMinimized={isMinimized}
+        isActive={activeRoute === item.key}
         expandAnim={expandAnim}
-        onPress={() => { 
-          onNavigate(item.key); 
-          onClose(); 
+        onPress={() => {
+          onNavigate(item.key);
+          onClose();
         }}
       />
     );
   };
 
   return (
-    <SafeAreaView edges={['top', 'bottom']} className="flex-1">
-      
-      {/* HEADER SECTION */}
-      <View 
-        className={`h-16 flex-row items-center mb-2 ${
-            isMinimized ? 'justify-center px-0' : 'justify-between pl-5 pr-2'
+    <SafeAreaView edges={['top', 'bottom']} className="flex-1" style={{ backgroundColor: theme.colors.surface }}>
+
+      {/* --- FIX START: HEADER SECTION --- */}
+      <View
+        className={`flex-row items-center mb-1 ${
+          isMinimized 
+            ? 'h-12 justify-center px-0' 
+            : 'h-auto min-h-[100px] pt-4 pb-2 justify-between pl-4 pr-1'
         }`}
       >
         {/* App Title with Fade Animation */}
         {!isMinimized && (
           <Animated.View style={{ opacity: expandAnim }}>
-            <Text variant="titleLarge" className="font-bold text-primary">
-                {APP_NAME}
-            </Text>
+            {/* Removed huge top margin (mt-8) since the container now has padding (pt-4) */}
+            <View className="flex-col items-end ml-3"> 
+              
+              {/* VISTA */}
+              <Text 
+                variant="displayLarge" 
+                className="text-primary leading-none"
+              >
+                {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
+              </Text>
+              
+              {/* AIMS */}
+              <Text 
+                variant="bodyLarge" 
+                className="text-primary mt-[-16px]"
+              >
+                {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
+              </Text>
+            </View>
           </Animated.View>
         )}
 
         {/* Menu Toggle (Web/Drawer Mode) */}
         {onMinimizeToggle && (
-            <IconButton
-                icon={isMinimized ? 'menu' : 'menu-open'}
-                onPress={() => onMinimizeToggle(!isMinimized)}
-                size={24}
-                mode={isMinimized ? 'contained' : 'contained-tonal'}
-            />
+          <IconButton
+            icon={isMinimized ? 'menu' : 'menu-open'}
+            onPress={() => onMinimizeToggle(!isMinimized)}
+            size={20}
+            style={{ margin: 0 }}
+            className={isMinimized ? 'mt-3 mx-2' : 'self-start mt-2 ml-2'} 
+          />
         )}
       </View>
+      {/* --- FIX END --- */}
 
-      <ScrollView className="flex-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+      <ScrollView
+        className="flex-1"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 10, paddingTop: 10 }}
+      >
         {SIDEBAR_CONFIG.filter(i => i.position === 'top').map(renderItem)}
       </ScrollView>
 
       <View>
-        <View className="pb-2">
+        <View className="pb-1">
           {SIDEBAR_CONFIG.filter(i => i.position === 'bottom').map(renderItem)}
         </View>
         <ThemeSwitcher expandAnim={expandAnim} isMinimized={!!isMinimized} />
-        {footer && <View className="px-4 py-2 opacity-50">{footer}</View>}
+        {footer && <View className="px-3 py-1 opacity-50">{footer}</View>}
       </View>
     </SafeAreaView>
   );
@@ -391,9 +439,10 @@ export default function Sidebar(props: SidebarProps) {
   const { isOpen, onClose, isMinimized, onMinimizeToggle } = props;
   const theme = useTheme();
   const { width: screenWidth } = useWindowDimensions();
-  
-  const SIDEBAR_WIDTH = 320;
-  const MINIMIZED_WIDTH = 80;
+
+  // Reduced sidebar widths for compactness
+  const SIDEBAR_WIDTH = 260;
+  const MINIMIZED_WIDTH = 64;
   const isWeb = Platform.OS === 'web';
   const shouldUseDrawerMode = isWeb;
 
@@ -413,7 +462,6 @@ export default function Sidebar(props: SidebarProps) {
     }
   }, [screenWidth, shouldUseDrawerMode]);
 
-  // Handle Width & Expand animations for Drawer Mode
   useEffect(() => {
     if (shouldUseDrawerMode) {
       Animated.parallel([
@@ -421,47 +469,45 @@ export default function Sidebar(props: SidebarProps) {
         Animated.timing(widthAnim, { toValue: isMinimized ? MINIMIZED_WIDTH : SIDEBAR_WIDTH, duration: 300, useNativeDriver: false, easing: Easing.inOut(Easing.ease) })
       ]).start();
     } else {
-      expandAnim.setValue(1); 
+      expandAnim.setValue(1);
     }
   }, [isMinimized, shouldUseDrawerMode]);
 
-  // Handle Slide/Fade animations for Mobile Modal Mode
   useEffect(() => {
     if (shouldUseDrawerMode) return;
 
     if (isOpen) {
       setVisible(true);
-      slideAnim.setValue(-SIDEBAR_WIDTH); 
-      
+      slideAnim.setValue(-SIDEBAR_WIDTH);
+
       Animated.parallel([
-        Animated.timing(slideAnim, { 
-            toValue: 0, 
-            duration: 300, 
-            useNativeDriver: true, 
-            easing: Easing.out(Easing.poly(4))
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+          easing: Easing.out(Easing.poly(4))
         }),
-        Animated.timing(fadeAnim, { 
-            toValue: 1, 
-            duration: 300, 
-            useNativeDriver: true 
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true
         }),
       ]).start();
     } else {
-      // Closing Animation
       Animated.parallel([
-        Animated.timing(slideAnim, { 
-            toValue: -SIDEBAR_WIDTH, 
-            duration: 250, 
-            useNativeDriver: true, 
-            easing: Easing.in(Easing.poly(4)) 
+        Animated.timing(slideAnim, {
+          toValue: -SIDEBAR_WIDTH,
+          duration: 250,
+          useNativeDriver: true,
+          easing: Easing.in(Easing.poly(4))
         }),
-        Animated.timing(fadeAnim, { 
-            toValue: 0, 
-            duration: 250, 
-            useNativeDriver: true 
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true
         }),
       ]).start(() => {
-          setVisible(false);
+        setVisible(false);
       });
     }
   }, [isOpen, shouldUseDrawerMode]);
@@ -470,12 +516,17 @@ export default function Sidebar(props: SidebarProps) {
     return (
       <Animated.View
         className="h-full border-r overflow-hidden"
-        style={{ width: widthAnim, backgroundColor: theme.colors.surface, borderColor: theme.colors.outlineVariant }}
+        style={{
+          width: widthAnim,
+          borderColor: theme.colors.outlineVariant,
+          borderWidth: 1,
+          borderStyle: 'solid',
+        }}
       >
-        <SidebarContent 
-          {...props} 
+        <SidebarContent
+          {...props}
           expandAnim={expandAnim}
-          onNavigate={(r) => { props.onNavigate(r); }} 
+          onNavigate={(r) => { props.onNavigate(r); }}
           onMinimizeToggle={(val) => { isUserOverride.current = true; onMinimizeToggle?.(val); }}
         />
       </Animated.View>
@@ -483,39 +534,42 @@ export default function Sidebar(props: SidebarProps) {
   }
 
   return (
-    <Modal 
-      transparent 
-      visible={visible} 
-      onRequestClose={onClose} 
+    <Modal
+      transparent
+      visible={visible}
+      onRequestClose={onClose}
       animationType="none"
       statusBarTranslucent
     >
-      <View className="flex-1 absolute inset-0"> 
+      <View className="flex-1 absolute inset-0">
         {/* Backdrop */}
-        <TouchableOpacity 
-          activeOpacity={1} 
-          onPress={onClose} 
+        <TouchableOpacity
+          activeOpacity={1}
+          onPress={onClose}
           className="absolute inset-0"
         >
-          <Animated.View 
-            className="absolute inset-0 bg-black/50" 
-            style={{ opacity: fadeAnim }} 
+          <Animated.View
+            className="absolute inset-0 bg-black/50"
+            style={{ opacity: fadeAnim }}
           />
         </TouchableOpacity>
 
         <Animated.View
           className="absolute left-0 top-0 bottom-0 shadow-xl"
           style={{
-            width: SIDEBAR_WIDTH, 
+            width: SIDEBAR_WIDTH,
             transform: [{ translateX: slideAnim }],
-            backgroundColor: theme.colors.surface, 
+            backgroundColor: theme.colors.surface,
             elevation: 16,
+            borderColor: theme.colors.outlineVariant, // Add outline
+            borderWidth: 1,
+            borderStyle: 'solid',
           }}
         >
-          <SidebarContent 
-            {...props} 
+          <SidebarContent
+            {...props}
             expandAnim={new Animated.Value(1)}
-            onMinimizeToggle={undefined} 
+            onMinimizeToggle={undefined}
           />
         </Animated.View>
       </View>

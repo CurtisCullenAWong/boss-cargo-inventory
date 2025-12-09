@@ -1,25 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
-// 1. Remove useNavigation hook import (not needed)
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Sidebar from '../components/sidebar/AdminSidebar'; 
 import Header from '../components/Header'; 
 
-type RootStackParamList = {
-  Layout: undefined;
-  Profile: undefined;
-};
+/**
+ * Props for the AppLayout component.
+ * @param children - The content to be rendered inside the main scroll view.
+ * @param activeRoute - The name of the currently active route/screen (used for the Header title).
+ * @param onProfilePress - Callback function when the profile icon is pressed.
+ * @param onNavigate - Callback function to update the active route, usually triggered by the Sidebar.
+ */
+interface AppLayoutProps {
+  children: ReactNode;
+  activeRoute: string;
+  onProfilePress: () => void;
+  onNavigate: (route: string) => void;
+}
 
-// 2. This definition automatically types the 'navigation' prop
-type Props = NativeStackScreenProps<RootStackParamList, 'Layout'>;
-
-// 3. Destructure 'navigation' from props here
-const LayoutScreen: React.FC<Props> = ({ navigation }) => {
+const AppLayout: React.FC<AppLayoutProps> = ({ 
+  children, 
+  activeRoute, 
+  onProfilePress,
+  onNavigate,
+}) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
-  const [activeRoute, setActiveRoute] = useState('Layout');
-  // 4. Removed const navigation = useNavigation(); 
   const theme = useTheme();
 
   return (
@@ -34,7 +40,7 @@ const LayoutScreen: React.FC<Props> = ({ navigation }) => {
         isMinimized={isMinimized}
         onMinimizeToggle={setIsMinimized}
         activeRoute={activeRoute}
-        onNavigate={(route) => setActiveRoute(route)}
+        onNavigate={onNavigate}
       />
 
       {/* 2. Main Content Column */}
@@ -42,18 +48,17 @@ const LayoutScreen: React.FC<Props> = ({ navigation }) => {
         <Header 
           title={activeRoute} 
           onMenuPress={() => setIsSidebarOpen(!isSidebarOpen)}
-          onProfilePress={() => navigation.navigate('Profile')}
+          onProfilePress={onProfilePress}
         />
-
         <ScrollView 
           className="flex-1"
           contentContainerClassName="px-4 pt-6 pb-10" 
         >
-          {/* CONTENT */}
+          {children} 
         </ScrollView>
       </View>
     </View>
   );
 };
 
-export default LayoutScreen;
+export default AppLayout;
