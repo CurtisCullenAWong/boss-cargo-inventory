@@ -33,12 +33,20 @@ export default ({ config }) => ({
 
     ios: {
       supportsTablet: true,
+      statusBar: {
+        style: "dark",
+      },
     },
 
     android: {
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
         backgroundColor: "#ffffff",
+      },
+      statusBar: {
+        barStyle: "dark-content",
+        backgroundColor: "#ffffff",
+        translucent: true,
       },
     },
   },

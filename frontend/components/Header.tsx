@@ -8,7 +8,6 @@ import {
   Avatar, 
   TouchableRipple 
 } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 interface HeaderProps {
   title: string;
@@ -22,35 +21,24 @@ const Header: React.FC<HeaderProps> = ({
   title,
   onMenuPress,
   onProfilePress,
-  rightAction,
 }) => {
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
   const isWeb = Platform.OS === "web";
-
-  const paddingTop = isWeb ? 12 : insets.top + 10;
 
   return (
     <Surface
-      elevation={2}
+    className='elevation rounded-br-3xl'
       style={{
         backgroundColor: theme.colors.primary,
-        paddingTop,
-        paddingBottom: 12,
-        borderBottomEndRadius: 28,
+        borderBottomRightRadius: 24,
       }}
     >
       <View
-        style={{
-          flexDirection: "row",
-          alignItems: "center",
-          paddingHorizontal: 16,
-          minHeight: 64,
-        }}
+      className='flex-row items-center px-2.5 p-3'
       >
 
         {/* Left Side */}
-        <View style={{ flexDirection: "row", alignItems: "center", flex: 1 }}>
+        <View className='flex-row items-center flex-1'>
           {!isWeb && (
             <IconButton
               icon="menu"
@@ -62,10 +50,8 @@ const Header: React.FC<HeaderProps> = ({
 
           <Text
             variant="titleLarge"
-            numberOfLines={1}
             style={{
               color: theme.colors.onPrimary,
-              fontWeight: "bold",
               marginLeft: !isWeb ? 4 : 0,
             }}
           >
@@ -74,18 +60,10 @@ const Header: React.FC<HeaderProps> = ({
         </View>
 
         {/* Right Side */}
-        <View style={{ flexDirection: "row", alignItems: "center" }}>
-          {rightAction && (
-            <View style={{ marginRight: 8 }}>{rightAction}</View>
-          )}
-
+        <View className='flex-row items-center'>
           <TouchableRipple
             onPress={onProfilePress}
-            borderless
-            style={{
-              borderRadius: 24,
-              overflow: "hidden",
-            }}
+            className='rounded-full'
           >
             <Avatar.Text
               size={40}

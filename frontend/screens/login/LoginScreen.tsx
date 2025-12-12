@@ -8,7 +8,6 @@ import {
   StatusBar,
   ScrollView,
   Dimensions,
-  StyleSheet
 } from 'react-native';
 import {
   TextInput,
@@ -20,7 +19,6 @@ import {
 } from 'react-native-paper';
 import { ROUTES } from '../../navigator/routes';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { BlurView } from 'expo-blur';
 import Animated, {
   useSharedValue,
@@ -44,40 +42,66 @@ const { width } = Dimensions.get('window');
 
 // --- RANDOMIZED DYNAMIC BLOB ---
 const Blob = ({ color, maxSize }: { color: string; maxSize: number }) => {
-  // Random initial position
-  const initialX = Math.random() * maxSize - maxSize / 2;
-  const initialY = Math.random() * maxSize - maxSize / 2;
+  // Center movement range
+  const initialX = (Math.random() - 0.5) * (maxSize * 0.4);
+  const initialY = (Math.random() - 0.5) * (maxSize * 0.4);
 
-  // Random movement delta — bigger for web
-  const deltaX = (Math.random() * 1.5 + 0.5) * maxSize; // 50% – 200% of size
-  const deltaY = (Math.random() * 1.5 + 0.5) * maxSize;
+  // Much calmer drift
+  const deltaX = (Math.random() * 0.4 + 0.15) * maxSize; 
+  const deltaY = (Math.random() * 0.4 + 0.15) * maxSize;
 
-  // Random animation duration — faster for web
-  const duration = 6000 + Math.random() * 6000; // 6–12s
+  const duration = Platform.OS === "web"
+    ? 9000 + Math.random() * 6000
+    : 11000 + Math.random() * 6000;
 
   const translateX = useSharedValue(initialX);
   const translateY = useSharedValue(initialY);
   const scale = useSharedValue(1);
   const rotate = useSharedValue(0);
+  const opacity = useSharedValue(0.35);
 
   useEffect(() => {
     translateX.value = withRepeat(
-      withTiming(initialX + deltaX, { duration, easing: Easing.inOut(Easing.sin) }),
+      withTiming(initialX + deltaX, {
+        duration,
+        easing: Easing.inOut(Easing.sin),
+      }),
       -1,
       true
     );
+
     translateY.value = withRepeat(
-      withTiming(initialY + deltaY, { duration: duration * 0.9, easing: Easing.inOut(Easing.sin) }),
+      withTiming(initialY + deltaY, {
+        duration,
+        easing: Easing.inOut(Easing.sin),
+      }),
       -1,
       true
     );
+
     scale.value = withRepeat(
-      withTiming(1 + Math.random() * 0.7, { duration: duration * 1.1, easing: Easing.inOut(Easing.sin) }),
+      withTiming(1 + Math.random() * 0.2, {
+        duration: duration * 1.1,
+        easing: Easing.inOut(Easing.sin),
+      }),
       -1,
       true
     );
+
     rotate.value = withRepeat(
-      withTiming(Math.random() * 360, { duration: duration * 1.5, easing: Easing.linear }),
+      withTiming(20 + Math.random() * 40, {
+        duration: duration * 2,
+        easing: Easing.linear,
+      }),
+      -1,
+      false
+    );
+
+    opacity.value = withRepeat(
+      withTiming(0.25 + Math.random() * 0.15, {
+        duration: duration * 1.4,
+        easing: Easing.inOut(Easing.sin),
+      }),
       -1,
       true
     );
@@ -90,20 +114,22 @@ const Blob = ({ color, maxSize }: { color: string; maxSize: number }) => {
       { scale: scale.value },
       { rotate: `${rotate.value}deg` },
     ],
+    opacity: opacity.value,
   }));
 
   return (
     <Animated.View
       style={[
         {
-          position: 'absolute',
+          position: "absolute",
           width: maxSize,
           height: maxSize,
           borderRadius: maxSize / 2,
           backgroundColor: color,
-          opacity: 0.4 + Math.random() * 0.4, // 0.4–0.8
-          left: 0,
-          top: 0,
+          left: "50%",
+          top: "50%",
+          marginLeft: -maxSize / 2,
+          marginTop: -maxSize / 2,
         },
         animatedStyle,
       ]}
@@ -111,7 +137,8 @@ const Blob = ({ color, maxSize }: { color: string; maxSize: number }) => {
   );
 };
 
-// --- RANDOMIZED MESH BACKGROUND ---
+
+// --- RANDOMIZED MESH BACKGROUND (Updated) ---
 const MeshBackground = ({ theme }: { theme: MD3Theme }) => {
   const isDark = theme.dark;
 
@@ -120,31 +147,39 @@ const MeshBackground = ({ theme }: { theme: MD3Theme }) => {
     theme.colors.secondaryContainer,
     theme.colors.tertiaryContainer,
     theme.colors.primary,
-    theme.colors.secondary,
-    theme.colors.tertiary
   ];
 
-  // More blobs on web
-  const blobCount = Platform.OS === 'web' ? 12 : blobColors.length;
+  // Fewer blobs for cleaner focus, but still enough for movement
+  const blobCount = Platform.OS === "web" ? 8 : 6;
 
   return (
-    <View style={StyleSheet.absoluteFill}>
-      <View style={{ flex: 1, backgroundColor: theme.colors.background }}>
-        {Array.from({ length: blobCount }).map((_, i) => {
-          const color = blobColors[i % blobColors.length];
-          return <Blob key={i} color={color} maxSize={width * (1.2 + Math.random() * 0.8)} />;
-        })}
-        <View
-          style={
-            Platform.OS === 'web'
-              ? { ...StyleSheet.absoluteFillObject, backgroundColor: isDark ? 'rgba(0,0,0,0.3)' : 'rgba(255,255,255,0.15)' }
-              : {}
-          }
-        />
+    <View className='absolute inset-0'>
+      <View className='absolute inset-0'>
+        {Array.from({ length: blobCount }).map((_, i) => (
+          <Blob
+            key={i}
+            color={blobColors[i % blobColors.length]}
+            maxSize={width * (0.9 + Math.random() * 0.5)}
+          />
+        ))}
       </View>
-    </View>
+
+      {/* Blur ABOVE blobs */}
+      <BlurView
+        intensity={70}
+        tint={isDark ? 'dark' : 'light'}
+        className='absolute inset-0'
+      />
+
+      {/* Soft overlay */}
+      <View
+        pointerEvents="none"
+        className={`absolute inset-0 ${isDark ? "bg-black/30" : "bg-white/20"}`}
+      />
+      </View>
   );
 };
+
 
 // --- HEADER ---
 const LoginHeader = ({ theme }: { theme: MD3Theme }) => (
@@ -152,22 +187,6 @@ const LoginHeader = ({ theme }: { theme: MD3Theme }) => (
     entering={FadeInDown.delay(100).duration(800).springify()}
     className="items-center mb-10"
   >
-    {/* <Surface
-      elevation={2}
-      style={{
-        width: 80,
-        height: 80,
-        borderRadius: 24,
-        justifyContent: 'center',
-        alignItems: 'center',
-        alignSelf: 'center',
-        marginBottom: 20,
-        backgroundColor: theme.colors.primary,
-      }}
-    >
-      <MaterialCommunityIcons name="view-dashboard-outline" size={44} color={theme.colors.onPrimary} />
-    </Surface> */}
-    
       <View className="flex-col items-center justify-center px-4">
         <View 
           style={{ 

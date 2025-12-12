@@ -1,6 +1,6 @@
 import "./global.css";
 import { useEffect } from "react";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
@@ -13,11 +13,13 @@ SplashScreen.preventAutoHideAsync();
 function AppContent() {
   const { theme } = useTheme();
   return (
-    <PaperProvider theme={theme}>
-      <SidebarProvider>
-        <StackNavigator />
-      </SidebarProvider>
-    </PaperProvider>
+    <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }} edges={['top', 'bottom']}>
+      <PaperProvider theme={theme}>
+        <SidebarProvider>
+          <StackNavigator />
+        </SidebarProvider>
+      </PaperProvider>
+    </SafeAreaView>
   );
 }
 
