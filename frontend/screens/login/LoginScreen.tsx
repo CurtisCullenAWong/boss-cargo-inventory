@@ -152,7 +152,7 @@ const LoginHeader = ({ theme }: { theme: MD3Theme }) => (
     entering={FadeInDown.delay(100).duration(800).springify()}
     className="items-center mb-10"
   >
-    <Surface
+    {/* <Surface
       elevation={2}
       style={{
         width: 80,
@@ -165,9 +165,8 @@ const LoginHeader = ({ theme }: { theme: MD3Theme }) => (
         backgroundColor: theme.colors.primary,
       }}
     >
-      {/* Icon changed to reflect 'Vista' (View/Dashboard) or Inventory */}
       <MaterialCommunityIcons name="view-dashboard-outline" size={44} color={theme.colors.onPrimary} />
-    </Surface>
+    </Surface> */}
     
       <View className="flex-col items-center justify-center px-4">
         <View 

@@ -32,13 +32,27 @@ export type SidebarConfigItem = {
 };
 
 export const SIDEBAR_CONFIG: SidebarConfigItem[] = [
-  { key: 'Dashboard', label: 'Dashboard', icon: 'view-dashboard', position: 'top' },
-  { key: 'Purchase Request', label: 'Purchase Request', icon: 'cash', position: 'top' },
-  { key: 'Supplier List', label: 'Supplier List', icon: 'account-group', position: 'top', },
-  { key: 'Purchase Order', label: 'Purchase Order', icon: 'cart', position: 'top' },
-  { key: 'Receiving Report', label: 'Receiving Report', icon: 'file-document-check', position: 'top' },
-  { key: 'Issuance Report', label: 'Issuance Report', icon: 'file-document-alert', position: 'top' },
-  { key: 'Returned Items', label: 'Returned Items', icon: 'archive-arrow-up', position: 'top' },
+  {
+    key: 'Inbound Operations',
+    label: 'Inbound Operations',
+    icon: 'truck-plus',
+    position: 'top',
+    children: [
+      { key: 'Purchase Request', label: 'Purchase Request', icon: 'cash', position: 'top' },
+      { key: 'Purchase Order', label: 'Purchase Order', icon: 'cart', position: 'top' },
+      { key: 'Receiving Report', label: 'Receiving Report', icon: 'file-document-check', position: 'top' },
+    ]
+  },
+  {
+    key: 'Outbound Operations',
+    label: 'Outbound Operations',
+    icon: 'truck-minus',
+    position: 'top',
+    children: [
+      { key: 'Returned Items', label: 'Returned Items', icon: 'archive-arrow-up', position: 'top' },
+      { key: 'Issuance Report', label: 'Issuance Report', icon: 'file-document-alert', position: 'top' },
+    ]
+  },
   {
     key: 'Inventory', label: 'Inventory', icon: 'clipboard-list', position: 'top',
     children: [
@@ -47,7 +61,17 @@ export const SIDEBAR_CONFIG: SidebarConfigItem[] = [
       { key: 'Consumable Asset', label: 'Consumable Asset', icon: 'package-variant', position: 'top' },
     ]
   },
-  { key: 'User Management', label: 'User Management', icon: 'account-group', position: 'top' },
+  {
+    key: 'System',
+    label: 'System',
+    icon: 'cogs',
+    position: 'top',
+    children: [
+      { key: 'Dashboard', label: 'Dashboard', icon: 'view-dashboard', position: 'top' },
+      { key: 'Supplier List', label: 'Supplier List', icon: 'account-group', position: 'top' },
+      { key: 'User Management', label: 'User Management', icon: 'account-group', position: 'top' },
+    ]
+  },
   { key: 'Logout', label: 'Logout', icon: 'logout', position: 'bottom' },
 ];
 
@@ -65,6 +89,8 @@ interface SidebarProps {
 const ITEM_HEIGHT = 36;
 const ITEM_MARGIN = 2;
 const ITEM_TOTAL_HEIGHT = ITEM_HEIGHT + ITEM_MARGIN;
+const SIDEBAR_WIDTH = 260;
+const MINIMIZED_WIDTH = 64;
 
 // --- 2. MENU ITEMS & GROUPS ---
 
@@ -86,15 +112,13 @@ const SidebarItem = React.memo(({
   const bgColor = isActive ? theme.colors.secondaryContainer : 'transparent';
   const textColor = isActive ? theme.colors.onSecondaryContainer : (isChild ? theme.colors.onSurfaceVariant : theme.colors.onSurface);
 
-  // Adjusted padding for compactness
   const wrapperClasses = isMinimized ? 'items-center px-0' : 'px-2';
 
   let rippleClasses = isMinimized
-    ? 'w-9 justify-center px-0' // slightly smaller width in minimized
+    ? 'w-9 justify-center px-0' 
     : 'w-full justify-start pr-3';
 
   if (!isMinimized) {
-    // Reduced indentation: pl-10 -> pl-8, pl-3 -> pl-2
     rippleClasses += isChild ? ' pl-8' : ' pl-2';
   }
 
@@ -109,7 +133,6 @@ const SidebarItem = React.memo(({
       <TouchableRipple
         onPress={onPress} borderless
         style={{ backgroundColor: bgColor, overflow: 'hidden' }}
-        // Changed h-10 (40px) to h-9 (36px)
         className={`h-9 rounded-md flex-row items-center ${rippleClasses}`}
       >
         <>
@@ -117,7 +140,7 @@ const SidebarItem = React.memo(({
             <View className={isMinimized ? '' : 'mr-2'}>
               <MaterialCommunityIcons
                 name={icon || 'circle-small'}
-                size={isChild ? 16 : 18} // Slightly smaller icons (18 -> 16, 20 -> 18)
+                size={isChild ? 16 : 18} 
                 color={isActive ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant}
               />
             </View>
@@ -132,10 +155,10 @@ const SidebarItem = React.memo(({
             }}
           >
             <Text
-              variant="labelMedium" // Changed from labelLarge/bodyMedium to labelMedium for consistent compactness
+              variant="labelMedium"
               numberOfLines={1}
               className={`flex-1`}
-              style={{ color: textColor, fontSize: 13 }} // Explicit slightly smaller font
+              style={{ color: textColor, fontSize: 13 }}
             >
               {label}
             </Text>
@@ -151,7 +174,100 @@ const SidebarItem = React.memo(({
   );
 });
 
-const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeToggle, onClose, expandAnim }: {
+const MinimizedGroupOverlay = ({
+    item,
+    activeRoute,
+    onNavigate,
+    onCloseSidebar,
+    onCloseOverlay
+}: {
+    item: SidebarConfigItem;
+    activeRoute: string;
+    onNavigate: (route: string) => void;
+    onCloseSidebar: () => void;
+    onCloseOverlay: () => void;
+}) => {
+    const theme = useTheme();
+
+    const isWeb = Platform.OS === 'web';
+    const leftPosition = isWeb ? MINIMIZED_WIDTH : 0; 
+
+    return (
+        <Modal
+            transparent
+            visible={true}
+            onRequestClose={onCloseOverlay}
+            animationType="fade"
+            statusBarTranslucent={false}
+        >
+            <TouchableOpacity
+                className="absolute inset-0"
+                activeOpacity={1}
+                onPress={onCloseOverlay}
+            />
+
+            <View
+                style={{
+                    position: 'absolute',
+                    top: Platform.OS === 'web' ? 100 : 50,
+                    left: leftPosition,
+                    backgroundColor: theme.colors.surface,
+                    borderRadius: 8,
+                    elevation: 8,
+                    shadowColor: '#000',
+                    shadowOpacity: 0.2,
+                    shadowRadius: 5,
+                    shadowOffset: { width: 0, height: 2 },
+                    minWidth: 150,
+                    paddingVertical: 4,
+                    zIndex: 9999,
+                    ...(!isWeb && {
+                        left: 0,
+                        width: SIDEBAR_WIDTH,
+                        paddingHorizontal: 8,
+                    })
+                }}
+            >
+                {item.children?.map(child => (
+                    <TouchableRipple
+                        key={child.key}
+                        onPress={() => {
+                            onNavigate(child.key);
+                            onCloseSidebar();
+                            onCloseOverlay();
+                        }}
+                        style={{
+                            backgroundColor: activeRoute === child.key ? theme.colors.secondaryContainer : 'transparent',
+                            paddingHorizontal: 16,
+                            height: ITEM_HEIGHT,
+                            justifyContent: 'center',
+                            borderRadius: 6,
+                            marginHorizontal: 4,
+                        }}
+                    >
+                        <View className="flex-row items-center">
+                            <MaterialCommunityIcons
+                                name={child.icon || 'circle-small'}
+                                size={16}
+                                color={activeRoute === child.key ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant}
+                                style={{ marginRight: 8 }}
+                            />
+                            <Text
+                                variant="labelMedium"
+                                numberOfLines={1}
+                                style={{ color: activeRoute === child.key ? theme.colors.onSecondaryContainer : theme.colors.onSurface }}
+                            >
+                                {child.label}
+                            </Text>
+                        </View>
+                    </TouchableRipple>
+                ))}
+            </View>
+        </Modal>
+    );
+};
+
+const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onClose, expandAnim }: {
   item: SidebarConfigItem;
   isMinimized: boolean;
   activeRoute: string;
@@ -161,6 +277,7 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
   expandAnim: Animated.Value;
 }) => {
   const { expandedGroups, toggleGroup } = useSidebarContext();
+  const [isOverlayOpen, setIsOverlayOpen] = useState(false);
   const isExpanded = expandedGroups.has(item.key);
   const groupExpandAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
 
@@ -180,8 +297,7 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
 
   const handlePress = () => {
     if (isMinimized) {
-      onMinimizeToggle?.(false);
-      setTimeout(() => toggleGroup(item.key), 100);
+      setIsOverlayOpen(true);
     } else {
       toggleGroup(item.key);
     }
@@ -193,7 +309,6 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
 
   const contentHeight = groupExpandAnim.interpolate({
     inputRange: [0, 1],
-    // UPDATED CALCULATION: uses ITEM_TOTAL_HEIGHT (38px) instead of 44px
     outputRange: [0, (item.children?.length || 0) * ITEM_TOTAL_HEIGHT],
   });
 
@@ -203,9 +318,9 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
         icon={item.icon}
         label={item.label}
         isMinimized={isMinimized}
-        isActive={isMinimized && isChildActive}
+        isActive={isChildActive}
         onPress={handlePress}
-        hasChildren
+        hasChildren={!isMinimized}
         animatedIconStyle={{ transform: [{ rotate: arrowRotation }] }}
         expandAnim={expandAnim}
       />
@@ -228,6 +343,16 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onMinimizeTo
             />
           ))}
         </Animated.View>
+      )}
+      
+      {isMinimized && isOverlayOpen && (
+        <MinimizedGroupOverlay
+            item={item}
+            activeRoute={activeRoute}
+            onNavigate={onNavigate}
+            onCloseSidebar={onClose}
+            onCloseOverlay={() => setIsOverlayOpen(false)}
+        />
       )}
     </View>
   );
@@ -258,10 +383,9 @@ const ThemeSwitcher = ({ expandAnim, isMinimized }: { expandAnim: Animated.Value
   const collapsedOpacity = expandAnim.interpolate({ inputRange: [0, 0.5, 1], outputRange: [1, 0, 0] });
   const collapsedScale = expandAnim.interpolate({ inputRange: [0, 1], outputRange: [1, 0.8] });
 
-  // Reduced container height
   const containerHeight = expandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [50, 80] // Reduced from 56/100 to 50/80
+    outputRange: [50, 80]
   });
 
   return (
@@ -288,8 +412,8 @@ const ThemeSwitcher = ({ expandAnim, isMinimized }: { expandAnim: Animated.Value
           <SegmentedButtons
             value={themeMode}
             onValueChange={(val) => setThemeMode(val as ThemeMode)}
-            density="small" // Small density is good
-            style={{ transform: [{ scale: 0.9 }] }} // Slightly scale down the buttons
+            density="small"
+            style={{ transform: [{ scale: 0.9 }] }}
             buttons={[
               { value: 'light', icon: 'white-balance-sunny', label: isWeb ? undefined : 'Light', showSelectedCheck: true },
               { value: 'dark', icon: 'weather-night', label: isWeb ? undefined : 'Dark', showSelectedCheck: true },
@@ -335,7 +459,6 @@ const SidebarContent = ({
   const theme = useTheme();
 
   const renderItem = (item: SidebarConfigItem) => {
-    // ... (keep existing renderItem logic)
     if (item.children?.length) {
       return (
         <SidebarGroup
@@ -372,29 +495,30 @@ const SidebarContent = ({
       {/* --- FIX START: HEADER SECTION --- */}
       <View
         className={`flex-row items-center mb-1 ${
-          isMinimized 
-            ? 'h-12 justify-center px-0' 
+          isMinimized
+            ? 'h-12 justify-center px-0'
             : 'h-auto min-h-[100px] pt-4 pb-2 justify-between pl-4 pr-1'
         }`}
       >
         {/* App Title with Fade Animation */}
         {!isMinimized && (
           <Animated.View style={{ opacity: expandAnim }}>
-            {/* Removed huge top margin (mt-8) since the container now has padding (pt-4) */}
-            <View className="flex-col items-end ml-3"> 
-              
+            <View className="flex-col items-end ml-3" style={{backgroundColor: theme.colors.onPrimary, padding: 6, borderRadius: 8}}>
+
               {/* VISTA */}
-              <Text 
-                variant="displayLarge" 
+              <Text
+                variant="displayLarge"
                 className="text-primary leading-none"
+                style={{color: theme.colors.primary}}
               >
                 {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
               </Text>
-              
+
               {/* AIMS */}
-              <Text 
-                variant="bodyLarge" 
-                className="text-primary mt-[-16px]"
+              <Text
+                variant="bodyLarge"
+                className="mt-[-16px]"
+                style={{color: theme.colors.primary}}
               >
                 {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
               </Text>
@@ -409,7 +533,7 @@ const SidebarContent = ({
             onPress={() => onMinimizeToggle(!isMinimized)}
             size={20}
             style={{ margin: 0 }}
-            className={isMinimized ? 'mt-3 mx-2' : 'self-start mt-2 ml-2'} 
+            className={isMinimized ? 'mt-3 mx-2' : 'self-start mt-2 ml-2'}
           />
         )}
       </View>
@@ -440,9 +564,7 @@ export default function Sidebar(props: SidebarProps) {
   const theme = useTheme();
   const { width: screenWidth } = useWindowDimensions();
 
-  // Reduced sidebar widths for compactness
-  const SIDEBAR_WIDTH = 260;
-  const MINIMIZED_WIDTH = 64;
+  // Reduced sidebar widths for compactness (re-defined from constants)
   const isWeb = Platform.OS === 'web';
   const shouldUseDrawerMode = isWeb;
 
