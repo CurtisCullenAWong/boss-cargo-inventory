@@ -4,6 +4,8 @@ interface SidebarContextType {
   expandedGroups: Set<string>;
   toggleGroup: (key: string) => void;
   setGroupExpanded: (key: string, expanded: boolean) => void;
+  isMinimized: boolean;
+  setIsMinimized: (minimized: boolean) => void;
 }
 
 const SidebarContext = createContext<SidebarContextType | undefined>(undefined);
@@ -19,10 +21,10 @@ interface SidebarProviderProps {
 }
 
 export const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) => {
-  // Initialize with Reports and Inventory expanded by default
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
-    new Set(['Reports', 'Inventory'])
+    new Set()
   );
+  const [isMinimized, setIsMinimized] = useState<boolean>(false);
 
   const toggleGroup = (key: string) => {
     const newSet = new Set(expandedGroups);
@@ -45,7 +47,7 @@ export const SidebarProvider: React.FC<SidebarProviderProps> = ({ children }) =>
   };
 
   return (
-    <SidebarContext.Provider value={{ expandedGroups, toggleGroup, setGroupExpanded }}>
+    <SidebarContext.Provider value={{ expandedGroups, toggleGroup, setGroupExpanded, isMinimized, setIsMinimized }}>
       {children}
     </SidebarContext.Provider>
   );

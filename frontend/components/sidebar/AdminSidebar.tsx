@@ -284,14 +284,11 @@ const SidebarGroup = ({ item, isMinimized, activeRoute, onNavigate, onClose, exp
   const isChildActive = useMemo(() => item.children?.some(child => child.key === activeRoute), [item.children, activeRoute]);
 
   useEffect(() => {
-    if (isChildActive && !isExpanded) {
-      toggleGroup(item.key);
-    }
-  }, [isChildActive]);
-
-  useEffect(() => {
     Animated.timing(groupExpandAnim, {
-      toValue: isExpanded ? 1 : 0, duration: 300, useNativeDriver: false, easing: Easing.inOut(Easing.ease),
+      toValue: isExpanded ? 1 : 0, 
+      duration: 300, 
+      useNativeDriver: false, 
+      easing: Easing.inOut(Easing.ease),
     }).start();
   }, [isExpanded, groupExpandAnim]);
 
@@ -574,15 +571,6 @@ export default function Sidebar(props: SidebarProps) {
   const widthAnim = useRef(new Animated.Value(shouldUseDrawerMode && isMinimized ? MINIMIZED_WIDTH : SIDEBAR_WIDTH)).current;
 
   const [visible, setVisible] = useState(isOpen);
-  const isUserOverride = useRef(false);
-
-  // Auto-minimize logic for Web based on screen width
-  useEffect(() => {
-    if (shouldUseDrawerMode && !isUserOverride.current) {
-      if (screenWidth < 1200 && !isMinimized) onMinimizeToggle?.(true);
-      else if (screenWidth >= 1200 && isMinimized) onMinimizeToggle?.(false);
-    }
-  }, [screenWidth, shouldUseDrawerMode]);
 
   useEffect(() => {
     if (shouldUseDrawerMode) {
@@ -649,7 +637,7 @@ export default function Sidebar(props: SidebarProps) {
           {...props}
           expandAnim={expandAnim}
           onNavigate={(r) => { props.onNavigate(r); }}
-          onMinimizeToggle={(val) => { isUserOverride.current = true; onMinimizeToggle?.(val); }}
+          onMinimizeToggle={onMinimizeToggle}
         />
       </Animated.View>
     );

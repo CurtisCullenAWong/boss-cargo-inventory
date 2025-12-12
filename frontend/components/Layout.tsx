@@ -2,7 +2,8 @@ import React, { useState, ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import Sidebar from '../components/sidebar/AdminSidebar'; 
-import Header from '../components/Header'; 
+import Header from '../components/Header';
+import { useSidebarContext } from '../context/SidebarContext'; 
 
 /**
  * Props for the AppLayout component.
@@ -25,7 +26,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   onNavigate,
 }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
+  const { isMinimized, setIsMinimized } = useSidebarContext();
   const theme = useTheme();
 
   return (
