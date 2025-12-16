@@ -103,10 +103,10 @@ export const colorConfigDark = {
     onTertiaryContainer: '#FFF9D9',
 
     // Error
-    error:               '#EF5350',
-    onError:             '#370000',
-    errorContainer:      '#8C1D18',
-    onErrorContainer:    '#F9DEDC',
+    error:               '#D32F2F',
+    onError:             '#FFFFFF',
+    errorContainer:      '#F9DEDC',
+    onErrorContainer:    '#5B1212',
 
     // Surfaces
     background:          '#1A1A1A',     

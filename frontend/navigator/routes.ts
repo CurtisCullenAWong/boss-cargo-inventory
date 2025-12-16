@@ -7,6 +7,7 @@ export const ROUTES = {
   UserDrawer: 'User Dashboard',
   Dashboard: 'Dashboard',
   Profile: 'Profile',
+  ItemRegistration: 'Item Registration',
   PurchaseRequest: 'Purchase Request',
   UserManagement: 'User Management',
 } as const;
@@ -29,15 +30,16 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       [ROUTES.Login]: '',
       [ROUTES.AdminDrawer]: {
         screens: {
-          [ROUTES.Dashboard]: 'dashboard',
+          [ROUTES.Dashboard]: 'admin/dashboard',
           [ROUTES.Profile]: 'profile',
+          [ROUTES.ItemRegistration]: 'item-registration',
           [ROUTES.PurchaseRequest]: 'purchase-request',
           [ROUTES.UserManagement]: 'user-management',
         },
       },
       [ROUTES.UserDrawer]: {
         screens: {
-          [ROUTES.Dashboard]: 'user/dashboard',
+          [ROUTES.Dashboard]: 'dashboard',
         },
       },
     },

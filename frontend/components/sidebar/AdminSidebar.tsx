@@ -48,16 +48,15 @@ export const SIDEBAR_CONFIG: SidebarConfigItem[] = [
     icon: 'truck-minus',
     position: 'top',
     children: [
+      { key: 'Issuance Report', label: 'Item Issuance', icon: 'file-document-alert', position: 'top' },
       { key: 'Returned Items', label: 'Returned Items', icon: 'archive-arrow-up', position: 'top' },
-      { key: 'Issuance Report', label: 'Issuance Report', icon: 'file-document-alert', position: 'top' },
     ]
   },
   {
     key: 'Inventory', label: 'Inventory', icon: 'clipboard-list', position: 'top',
     children: [
       { key: 'Items List', label: 'Items List', icon: 'format-list-bulleted', position: 'top' },
-      { key: 'Fix Asset', label: 'Fix Asset', icon: 'cube', position: 'top' },
-      { key: 'Consumable Asset', label: 'Consumable Asset', icon: 'package-variant', position: 'top' },
+      { key: 'Item Registration', label: 'Item Registration', icon: 'archive-arrow-down', position: 'top' },
     ]
   },
   {
