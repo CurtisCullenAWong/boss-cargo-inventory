@@ -1,4 +1,3 @@
-import React from 'react';
 import { Text } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';

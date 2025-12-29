@@ -1,6 +1,6 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View,
   TouchableOpacity,
@@ -9,15 +9,7 @@ import {
   StatusBar,
   Dimensions,
 } from 'react-native';
-import {
-  TextInput,
-  Button,
-  Text,
-  Checkbox,
-  Surface,
-  useTheme,
-  MD3Theme,
-} from 'react-native-paper';
+import { TextInput, Button, Text, Checkbox, Surface, useTheme, MD3Theme } from 'react-native-paper';
 import { ROUTES } from '../../navigator/routes';
 import { BlurView } from 'expo-blur';
 import Animated, {
@@ -29,17 +21,18 @@ import Animated, {
   FadeInDown,
   FadeInUp,
 } from 'react-native-reanimated';
-import useSnackbar from '../../../backend/hooks/useSnackbar'
+import useSnackbar from '../../hooks/useSnackbar';
 import { supabase } from '../../../backend/lib/supabaseClient';
 import { ScrollView } from 'react-native-gesture-handler';
 
 // --- TYPES ---
-type RootStackParamList = {
-  Login: undefined;
-  AdminDrawer: undefined;
-};
-
-type Props = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type Props = NativeStackScreenProps<
+  {
+    Login: undefined;
+    'Admin Dashboard': undefined;
+  },
+  'Login'
+>;
 
 const { width, height } = Dimensions.get('window');
 const isMobile = width < 600;
@@ -156,11 +149,11 @@ const MeshBackground = ({ theme }: { theme: MD3Theme }) => {
           />
         ))}
       </View>
-      <BlurView
+      {/* <BlurView
         intensity={70}
         tint={isDark ? 'dark' : 'light'}
         style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
-      />
+      /> */}
       <View
         pointerEvents="none"
         style={{
@@ -404,17 +397,27 @@ const LoginForm = ({ isLoading, onSubmit }: LoginFormProps) => {
 const LoginScreen: React.FC<Props> = ({ navigation }) => {
   const theme = useTheme();
   const [isLoading, setIsLoading] = useState(false);
-  const { showSnackbar, SnackbarElement } = useSnackbar()
+  const { showSnackbar, SnackbarElement } = useSnackbar();
   const handleLogin = async (email: string, pass: string) => {
     if (!email || !pass) {
-      showSnackbar('Please enter both email and password.')
+      showSnackbar('Please enter both email and password.');
       return;
     }
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password: pass });
-      if (error)showSnackbar('Login Failed.');
-      else navigation.navigate(ROUTES.AdminDrawer as any);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password: pass,
+      });
+
+      if (error) {
+        showSnackbar(error.message || 'Unable to sign in. Please try again.');
+        return;
+      }
+
+      // Successful sign-in: Supabase auth listener in AuthProvider will update the session
+      // and the navigator will automatically switch to the protected drawer.
+      navigation.navigate(ROUTES.AdminDrawer as never);
     } finally {
       setIsLoading(false);
     }

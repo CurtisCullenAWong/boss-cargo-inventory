@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
 import { View, ScrollView, Platform } from 'react-native';
 import {
   Text,
   Avatar,
   List,
   Divider,
-  Switch,
   Button,
   useTheme,
   Surface,
@@ -14,12 +12,14 @@ import {
 } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useAuth } from '../../context/AuthContext';
+import { isLogoutRoute } from 'frontend/navigator/routes';
 
 const ProfileScreen = () => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
   const navigation = useNavigation();
-
+  const { signOut, isLoggingOut } = useAuth();
   return (
     <View
       className="flex-1"
@@ -35,6 +35,11 @@ const ProfileScreen = () => {
         elevation={1}
         style={{
           height: 56,
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
           flexDirection: 'row',
           alignItems: 'center',
           paddingHorizontal: 12,
@@ -46,7 +51,7 @@ const ProfileScreen = () => {
 
       <ScrollView
         contentContainerStyle={{
-          paddingTop: 12,
+          paddingTop: 80,
           paddingBottom: 80,
           paddingHorizontal: Platform.OS === 'web' ? 0 : 12,
           alignItems: 'center',
@@ -134,51 +139,19 @@ const ProfileScreen = () => {
           <Divider style={{ marginTop: 24 }} />
 
           {/* ------------------------------ */}
-          {/* Preferences */}
-          {/* ------------------------------ */}
-          {/* <List.Section style={{ paddingHorizontal: 0 }}>
-            <List.Subheader>Preferences</List.Subheader>
-
-            <List.Item
-              title="Dark Mode"
-              left={(props) => <List.Icon {...props} icon="theme-light-dark" />}
-              right={() => (
-                <Switch
-                  value={isDarkTheme}
-                  onValueChange={() => setIsDarkTheme(!isDarkTheme)}
-                />
-              )}
-            />
-
-            <List.Item
-              title="Notification Alerts"
-              left={(props) => <List.Icon {...props} icon="bell-outline" />}
-              right={() => (
-                <Switch
-                  value={notifications}
-                  onValueChange={() => setNotifications(!notifications)}
-                />
-              )}
-            />
-          </List.Section> */}
-
-          <Divider />
-
-          {/* ------------------------------ */}
           {/* Security */}
           {/* ------------------------------ */}
           <List.Section style={{ paddingHorizontal: 0 }}>
             <List.Subheader>Security</List.Subheader>
-
             <List.Item
-              title="Biometric Login"
-              left={(props) => <List.Icon {...props} icon="fingerprint" />}
+              title="Edit Profile"
+              left={(props) => <List.Icon {...props} icon="account-outline" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
               onPress={() => {}}
             />
 
             <List.Item
-              title="Change PIN"
+              title="Change Password"
               left={(props) => <List.Icon {...props} icon="lock-outline" />}
               right={(props) => <List.Icon {...props} icon="chevron-right" />}
               onPress={() => {}}
@@ -191,9 +164,16 @@ const ProfileScreen = () => {
           <View style={{ marginTop: 30 }}>
             <Button
               mode="outlined"
-              icon="logout"
+              icon={isLoggingOut ? undefined : "logout"}
               textColor={theme.colors.error}
               style={{ borderColor: theme.colors.error, paddingVertical: 4 }}
+              loading={isLoggingOut}
+              disabled={isLoggingOut}
+              onPress={() => {
+                if (isLogoutRoute('Logout')) {
+                  void signOut();
+                }
+              }}
             >
               Log Out
             </Button>

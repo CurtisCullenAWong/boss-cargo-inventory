@@ -29,78 +29,41 @@ surfaceVariant — A background color alternative to the main surface color, oft
 onSurfaceVariant — Text or icon color used for elements on surface variant backgrounds to maintain contrast.
 
 outline — The color used for borders and dividers, providing subtle separation between UI elements.
+outlineVariant — A variant of outline color, typically lighter or more subtle, used for less prominent borders and dividers.
 */
 
 // =======================================
 //  Brand Base Tokens
 // =======================================
 const BASE = {
-    lightGold: '#FEE000',     // Primary brand color
-    sandGold:  '#FDEE7E',     // Secondary / supporting
-    darkGray:  '#292929',     // Main neutral (dark)
-    midGray:   '#787171',     // Secondary neutral
+    darkSlate: '#1E293B',   // PRIMARY
+    midSlate:  '#334155',   // SECONDARY
+    blue:      '#0073C2',   // TERTIARY / ACCENT
+    softLight: '#F8F0F0',   // LIGHT NEUTRAL
 };
+  
 
 // =======================================
 //  Light Color Scheme
 // =======================================
 export const colorConfigLight = {
     // Primary
-    primary:            BASE.lightGold,
-    onPrimary:          BASE.darkGray,
-    primaryContainer:   BASE.sandGold,
-    onPrimaryContainer: BASE.darkGray,
+    primary:            BASE.darkSlate,
+    onPrimary:          '#FFFFFF',
+    primaryContainer:   '#E2E8F0',
+    onPrimaryContainer: BASE.darkSlate,
 
     // Secondary
-    secondary:            BASE.sandGold,
-    onSecondary:          BASE.darkGray,
-    secondaryContainer:   '#FFF9C2',     
-    onSecondaryContainer: BASE.darkGray,
+    secondary:            BASE.midSlate,
+    onSecondary:          '#FFFFFF',
+    secondaryContainer:   '#CBD5E1',
+    onSecondaryContainer: BASE.darkSlate,
 
-    // Tertiary (variant of primary)
-    tertiary:            BASE.lightGold,
-    onTertiary:          BASE.darkGray,
-    tertiaryContainer:   '#FFF4A6',     
-    onTertiaryContainer: BASE.darkGray,
-
-    // Error (kept red for accessibility)
-    error:               '#D32F2F',
-    onError:             '#FFFFFF',
-    errorContainer:      '#F9DEDC',
-    onErrorContainer:    '#5B1212',
-    // Surfaces
-    background:          '#FFFEF7',      
-    onBackground:        BASE.darkGray,
-    surface:             '#FFFFFF',
-    onSurface:           BASE.darkGray,
-    surfaceVariant:      '#FAF4D7',      
-    onSurfaceVariant:    BASE.midGray,
-    // Outline / borders
-    outline:             BASE.midGray,
-};
-
-
-// =======================================
-//  Dark Color Scheme
-// =======================================
-export const colorConfigDark = {
-    // Primary
-    primary:            '#FEE85A',      
-    onPrimary:          BASE.darkGray,
-    primaryContainer:   '#C7B200',      
-    onPrimaryContainer: '#FFF9D9',
-
-    // Secondary
-    secondary:            BASE.sandGold,
-    onSecondary:          BASE.darkGray,
-    secondaryContainer:   '#C7B763',    
-    onSecondaryContainer: '#FFF9D9',
-
-    // Tertiary (variant)
-    tertiary:            '#FEE85A',
-    onTertiary:          BASE.darkGray,
-    tertiaryContainer:   '#C7B200',
-    onTertiaryContainer: '#FFF9D9',
+    // Tertiary (Accent / Actions)
+    tertiary:            BASE.blue,
+    onTertiary:          '#FFFFFF',
+    tertiaryContainer:   '#D6E9F7',
+    onTertiaryContainer: BASE.darkSlate,
 
     // Error
     error:               '#D32F2F',
@@ -109,15 +72,60 @@ export const colorConfigDark = {
     onErrorContainer:    '#5B1212',
 
     // Surfaces
-    background:          '#1A1A1A',     
-    onBackground:        '#F2F2F2',
+    background:          BASE.softLight,
+    onBackground:        BASE.darkSlate,
 
-    surface:             BASE.darkGray,
-    onSurface:           '#F2F2F2',
+    surface:             '#FFFFFF',
+    onSurface:           BASE.darkSlate,
 
-    surfaceVariant:      '#3A3A3A',
-    onSurfaceVariant:    '#C0C0C0',
+    surfaceVariant:      '#F1F5F9',
+    onSurfaceVariant:    BASE.midSlate,
 
     // Outline
-    outline:             BASE.midGray,
+    outline:             '#CBD5E1',
+    outlineVariant:      '#E2E8F0',
 };
+  
+// =======================================
+//  Dark Color Scheme
+// =======================================
+export const colorConfigDark = {
+    // Primary
+    primary:            BASE.darkSlate,
+    onPrimary:          '#F1F5F9',
+    primaryContainer:   '#0F172A',
+    onPrimaryContainer: '#E2E8F0',
+  
+    // Secondary
+    secondary:            BASE.midSlate,
+    onSecondary:          '#F1F5F9',
+    secondaryContainer:   '#1F2937',
+    onSecondaryContainer: '#E2E8F0',
+  
+    // Tertiary (Accent)
+    tertiary:            '#4DA3E0',       // lifted blue for contrast
+    onTertiary:          '#000000',        // white for better contrast on light blue
+    tertiaryContainer:   BASE.blue,
+    onTertiaryContainer: '#EAF4FB',
+  
+    // Error
+    error:               '#EF5350',
+    onError:             '#000000',
+    errorContainer:      '#5F1D1D',
+    onErrorContainer:    '#FDECEC',
+  
+    // Surfaces
+    background:          '#0B1220',
+    onBackground:        '#F1F5F9',
+  
+    surface:             '#0F172A',
+    onSurface:           '#F1F5F9',
+  
+    surfaceVariant:      BASE.midSlate,
+    onSurfaceVariant:    '#CBD5E1',
+  
+    // Outline
+    outline:             '#475569',
+    outlineVariant:      '#334155',
+  };
+  

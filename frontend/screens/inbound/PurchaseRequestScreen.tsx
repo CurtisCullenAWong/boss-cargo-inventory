@@ -1,10 +1,9 @@
-import React from 'react';
 import { View } from 'react-native';
 import { Text, Button } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { DrawerNavigationProp } from '@react-navigation/drawer';
-import AppLayout from '../components/Layout';
-import { ROUTES, navigateFromSidebar, type RootStackParamList } from '../navigator/routes';
+import AppLayout from '../../components/Layout';
+import { ROUTES, navigateFromSidebar, type RootStackParamList } from '../../navigator/routes';
 
 type NavigationProp = DrawerNavigationProp<RootStackParamList, typeof ROUTES.PurchaseRequest>;
 

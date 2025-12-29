@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useEffect, useRef, useState, useMemo, memo } from 'react';
 import {
   Animated,
   Easing,
@@ -7,71 +7,23 @@ import {
   TouchableOpacity,
   View,
   ScrollView,
+  Image,
 } from 'react-native';
 import {
   useTheme,
   IconButton,
   Text,
   TouchableRipple,
-  SegmentedButtons
+  SegmentedButtons,
+  ActivityIndicator,
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme as useAppTheme, type ThemeMode } from '../../context/ThemeContext';
-import { useSidebarContext } from '../../context/SidebarContext';
-
-// --- 1. CONFIGURATION ---
-
-export type SidebarConfigItem = {
-  key: string;
-  label: string;
-  icon: keyof typeof MaterialCommunityIcons.glyphMap;
-  position: 'top' | 'bottom';
-  children?: SidebarConfigItem[];
-};
-
-export const SIDEBAR_CONFIG: SidebarConfigItem[] = [
-  {
-    key: 'Inbound Operations',
-    label: 'Inbound Operations',
-    icon: 'truck-plus',
-    position: 'top',
-    children: [
-      { key: 'Purchase Request', label: 'Purchase Request', icon: 'cash', position: 'top' },
-      { key: 'Purchase Order', label: 'Purchase Order', icon: 'cart', position: 'top' },
-      { key: 'Receiving Report', label: 'Receiving Report', icon: 'file-document-check', position: 'top' },
-    ]
-  },
-  {
-    key: 'Outbound Operations',
-    label: 'Outbound Operations',
-    icon: 'truck-minus',
-    position: 'top',
-    children: [
-      { key: 'Issuance Report', label: 'Item Issuance', icon: 'file-document-alert', position: 'top' },
-      { key: 'Returned Items', label: 'Returned Items', icon: 'archive-arrow-up', position: 'top' },
-    ]
-  },
-  {
-    key: 'Inventory', label: 'Inventory', icon: 'clipboard-list', position: 'top',
-    children: [
-      { key: 'Items List', label: 'Items List', icon: 'format-list-bulleted', position: 'top' },
-      { key: 'Item Registration', label: 'Item Registration', icon: 'archive-arrow-down', position: 'top' },
-    ]
-  },
-  {
-    key: 'System',
-    label: 'System',
-    icon: 'cogs',
-    position: 'top',
-    children: [
-      { key: 'Dashboard', label: 'Dashboard', icon: 'view-dashboard', position: 'top' },
-      { key: 'Supplier List', label: 'Supplier List', icon: 'account-group', position: 'top' },
-      { key: 'User Management', label: 'User Management', icon: 'account-group', position: 'top' },
-    ]
-  },
-  { key: 'Logout', label: 'Logout', icon: 'logout', position: 'bottom' },
-];
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useTheme as useAppTheme, type ThemeMode } from '../context/ThemeContext';
+import { useSidebarContext } from '../context/SidebarContext';
+import { useAuth } from '../context/AuthContext';
+import { ADMIN_SIDEBAR_CONFIG, type SidebarConfigItem } from './sidebar/adminSidebarConfig';
+import { isLogoutRoute } from '../navigator/routes';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -83,32 +35,21 @@ interface SidebarProps {
   footer?: React.ReactNode;
 }
 
-// --- CONSTANTS ---
 const IS_WEB = Platform.OS === 'web';
-
-// Width
 const SIDEBAR_WIDTH = IS_WEB ? 300 : 280;
 const MINIMIZED_WIDTH = 80;
-
-// Item Dimensions
-const ITEM_HEIGHT = 44;
-const ITEM_MARGIN_Y = 4;
-const ITEM_RADIUS = 10;
-const ITEM_PADDING_X = 10;
+const ITEM_HEIGHT = 36;
+const ITEM_MARGIN_Y = 2;
+const ITEM_RADIUS = 8;
+const ITEM_PADDING_X = 8;
 const ITEM_PADDING_X_MINIMIZED = 12;
+const ICON_SIZE = 20;
+const CHILD_ICON_SIZE = 18;
+const CHEVRON_ICON_SIZE = 18;
+const CHILD_INDENT = 24;
 
-// Icon Sizes
-const ICON_SIZE = 24;
-const CHILD_ICON_SIZE = 20;
-const CHEVRON_ICON_SIZE = 20;
-
-// Indentation
-const CHILD_INDENT = 32;
-
-// --- 2. MENU ITEMS & GROUPS ---
-
-const SidebarItem = React.memo(({
-  icon, label, isMinimized, isActive, onPress, onPressIn, isChild, hasChildren, animatedIconStyle, expandAnim
+const SidebarItem = memo(({
+  icon, label, isMinimized, isActive, onPress, onPressIn, isChild, hasChildren, animatedIconStyle, expandAnim, isLoading
 }: {
   icon?: keyof typeof MaterialCommunityIcons.glyphMap;
   label: string;
@@ -120,16 +61,14 @@ const SidebarItem = React.memo(({
   hasChildren?: boolean;
   animatedIconStyle?: any;
   expandAnim: Animated.Value;
+  isLoading?: boolean;
 }) => {
   const theme = useTheme();
 
-  const bgColor = isActive ? theme.colors.secondaryContainer : 'transparent';
-  const textColor = isActive 
-    ? theme.colors.onSecondaryContainer 
-    : theme.colors.onSurfaceVariant;
-  const iconColor = isActive 
-    ? theme.colors.onSecondaryContainer 
-    : theme.colors.onSurfaceVariant;
+  const bgColor = isActive ? theme.colors.primaryContainer : 'transparent';
+  const contentColor = isActive 
+    ? theme.colors.onPrimaryContainer 
+    : theme.colors.onSecondary;
 
   const iconSize = isChild ? CHILD_ICON_SIZE : ICON_SIZE;
   const labelVariant = isChild ? 'bodyMedium' : 'bodyLarge';
@@ -149,11 +88,12 @@ const SidebarItem = React.memo(({
   });
 
   return (
-    <View style={{ marginVertical: ITEM_MARGIN_Y, marginHorizontal: isMinimized ? 8 : 12 }}>
+    <View style={{ marginVertical: ITEM_MARGIN_Y, marginHorizontal: 8 }}>
       <TouchableRipple
         onPress={onPress}
         onPressIn={onPressIn}
         borderless={false}
+        disabled={isLoading}
         style={{
           height: ITEM_HEIGHT,
           justifyContent: 'center',
@@ -171,18 +111,19 @@ const SidebarItem = React.memo(({
             paddingRight: basePaddingRight
           }}
         >
-          {/* ICON */}
           {(icon || !isChild) && (
-            <View style={{ marginRight: isMinimized ? 0 : 12 }}>
-              <MaterialCommunityIcons
-                name={icon || 'circle-small'}
-                size={iconSize}
-                color={iconColor}
-              />
+            <View style={{ marginRight: isMinimized ? 0 : 8 }}>
+              {isLoading ? (
+                <ActivityIndicator size={iconSize} color={contentColor} />
+              ) : (
+                <MaterialCommunityIcons
+                  name={icon || 'circle-small'}
+                  size={iconSize}
+                  color={contentColor}
+                />
+              )}
             </View>
           )}
-
-          {/* LABEL */}
           <Animated.View
             style={{
               flex: 1,
@@ -195,19 +136,18 @@ const SidebarItem = React.memo(({
             <Text
               variant={labelVariant}
               style={{
-                color: textColor,
+                color: contentColor,
                 flex: 1,
               }}
             >
               {label}
             </Text>
-
             {hasChildren && (
-              <Animated.View style={[{ marginLeft: 8 }, animatedIconStyle]}>
+              <Animated.View style={[{ marginLeft: 4 }, animatedIconStyle]}>
                 <MaterialCommunityIcons
                   name="chevron-down"
                   size={CHEVRON_ICON_SIZE}
-                  color={iconColor}
+                  color={contentColor}
                 />
               </Animated.View>
             )}
@@ -263,65 +203,67 @@ const MinimizedGroupOverlay = ({
                 backgroundColor: theme.colors.surface,
                 borderRadius: 8,
                 elevation: 8,
-                shadowColor: '#000',
-                shadowOpacity: 0.2,
+                shadowColor: theme.colors.onSurface,
+                shadowOpacity: theme.dark ? 0.5 : 0.2,
                 shadowRadius: 5,
                 shadowOffset: { width: 0, height: 2 },
                 minWidth: 150,
                 zIndex: 9999,
               }}
             >
-              {/* Header / Title */}
-              <View style={{ paddingHorizontal: 12, paddingVertical: 8 }}>
+              <View style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
                 <Text
                   variant="titleMedium"
                   numberOfLines={1}
-                  style={{ color: theme.colors.onSurface, fontWeight: '600' }}
+                  style={{ color: theme.colors.onSurface, fontWeight: '600', fontSize: 14 }}
                 >
                   {item.label}
                 </Text>
               </View>
-
-              {/* Divider */}
-              <View style={{ height: 1, backgroundColor: theme.colors.outlineVariant, opacity: 0.6 }} />
-
-              {/* Children */}
-              <View style={{ paddingVertical: 4 }}>
-                {item.children?.map(child => (
-                  <TouchableRipple
-                    key={child.key}
-                    onPress={() => {
-                      onNavigate(child.key);
-                      onCloseSidebar();
-                      onCloseOverlay();
-                    }}
-                    style={{
-                      backgroundColor: activeRoute === child.key ? theme.colors.secondaryContainer : 'transparent',
-                      paddingHorizontal: 16,
-                      height: ITEM_HEIGHT,
-                      justifyContent: 'center',
-                      borderRadius: 6,
-                      marginHorizontal: 4,
-                      marginVertical: 2,
-                    }}
-                  >
-                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <MaterialCommunityIcons
-                        name={child.icon || 'circle-small'}
-                        size={16}
-                        color={activeRoute === child.key ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant}
-                        style={{ marginRight: 8 }}
-                      />
-                      <Text
-                        variant="labelLarge"
-                        numberOfLines={1}
-                        style={{ color: activeRoute === child.key ? theme.colors.onSecondaryContainer : theme.colors.onSurface }}
-                      >
-                        {child.label}
-                      </Text>
-                    </View>
-                  </TouchableRipple>
-                ))}
+              <View style={{ height: 1, backgroundColor: theme.colors.outlineVariant }} />
+              <View style={{ paddingVertical: 2 }}>
+                {item.children?.map(child => {
+                  const isChildActive = activeRoute === child.key;
+                  const childContentColor = isChildActive 
+                    ? theme.colors.onSecondaryContainer 
+                    : theme.colors.onSurface;
+                  
+                  return (
+                    <TouchableRipple
+                      key={child.key}
+                      onPress={() => {
+                        onNavigate(child.key);
+                        onCloseSidebar();
+                        onCloseOverlay();
+                      }}
+                      style={{
+                        backgroundColor: isChildActive ? theme.colors.secondaryContainer : 'transparent',
+                        paddingHorizontal: 12,
+                        height: ITEM_HEIGHT,
+                        justifyContent: 'center',
+                        borderRadius: 6,
+                        marginHorizontal: 4,
+                        marginVertical: 1,
+                      }}
+                    >
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <MaterialCommunityIcons
+                          name={child.icon || 'circle-small'}
+                          size={CHILD_ICON_SIZE}
+                          color={isChildActive ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant}
+                          style={{ marginRight: 8 }}
+                        />
+                        <Text
+                          variant="labelLarge"
+                          numberOfLines={1}
+                          style={{ color: childContentColor, fontSize: 13 }}
+                        >
+                          {child.label}
+                        </Text>
+                      </View>
+                    </TouchableRipple>
+                  );
+                })}
               </View>
             </View>
         </Modal>
@@ -440,8 +382,6 @@ const SidebarGroup = ({
   );
 };
 
-// --- 3. THEME SWITCHER ---
-
 const ThemeSwitcher = ({ 
   expandAnim, 
   isMinimized 
@@ -479,15 +419,20 @@ const ThemeSwitcher = ({
   return (
     <View 
       style={{ 
-        borderTopWidth: 1,
-        borderColor: theme.colors.outlineVariant,
-        marginHorizontal: 12,
-        marginTop: 12,
-        marginBottom: 8,
-        paddingTop: 12
+        marginHorizontal: 8,
+        marginTop: 8,
+        marginBottom: 4,
+        paddingTop: 8
       }}
-    >
-      {/* EXPANDED */}
+      >
+      <View 
+        style={{ 
+          height: 1,
+          backgroundColor: theme.colors.onSecondary,
+          opacity: 0.12,
+          marginBottom: 8
+        }} 
+      />
       <Animated.View
         style={{
           opacity: expandedOpacity,
@@ -497,41 +442,48 @@ const ThemeSwitcher = ({
         <Text 
           variant="labelSmall" 
           style={{
-            color: theme.colors.onSurfaceVariant,
-            marginBottom: 8,
+            color: theme.colors.onSecondary,
+            marginBottom: 6,
             textAlign: 'center',
-            textTransform: 'uppercase',
             letterSpacing: 0.5,
-            opacity: 0.7
+            fontSize: 10
           }}
         >
-          App Theme
+          APP THEME
         </Text>
         <SegmentedButtons
           value={themeMode}
           onValueChange={(val) => setThemeMode(val as ThemeMode)}
           density="small"
+          theme={{
+            colors: {
+              secondaryContainer: theme.colors.primaryContainer,
+              onSecondaryContainer: theme.colors.onPrimaryContainer,
+              surface: 'transparent',
+              onSurface: theme.colors.onSecondary,
+              outline: theme.colors.onSecondary,
+              outlineVariant: theme.colors.onSecondary,
+            },
+          }}
           buttons={[
             { 
               value: 'light', 
               icon: 'white-balance-sunny', 
-              label: IS_WEB ? undefined : 'Light' 
+              label: IS_WEB ? undefined : 'Light',
             },
             { 
               value: 'dark', 
               icon: 'weather-night', 
-              label: IS_WEB ? undefined : 'Dark' 
+              label: IS_WEB ? undefined : 'Dark',
             },
             { 
               value: 'auto', 
               icon: 'brightness-auto', 
-              label: IS_WEB ? undefined : 'Auto' 
+              label: IS_WEB ? undefined : 'Auto',
             },
           ]}
         />
       </Animated.View>
-
-      {/* MINIMIZED */}
       <Animated.View
         style={{
           opacity: collapsedOpacity,
@@ -550,8 +502,6 @@ const ThemeSwitcher = ({
   );
 };
 
-// --- 4. CONTENT CONTAINER ---
-
 interface SidebarContentProps extends SidebarProps {
   expandAnim: Animated.Value;
 }
@@ -567,6 +517,7 @@ const SidebarContent = ({
 }: SidebarContentProps) => {
   const theme = useTheme();
   const insets = useSafeAreaInsets();
+  const { signOut, isLoggingOut } = useAuth();
 
   const renderItem = (item: SidebarConfigItem) => {
     if (item.children?.length) {
@@ -590,7 +541,11 @@ const SidebarContent = ({
         isMinimized={isMinimized}
         isActive={activeRoute === item.key}
         expandAnim={expandAnim}
+        isLoading={isLogoutRoute(item.key) && isLoggingOut}
         onPress={() => {
+          if (isLogoutRoute(item.key)) {
+            void signOut();
+          }
           onNavigate(item.key);
           onClose();
         }}
@@ -602,50 +557,58 @@ const SidebarContent = ({
     <View
       style={{
         flex: 1,
-        backgroundColor: theme.colors.surface,
+        backgroundColor: theme.colors.secondary,
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
       }}
     >
-      {/* HEADER SECTION */}
       <View
         style={{
           flexDirection: 'row',
           alignItems: isMinimized ? 'center' : 'flex-start',
-          justifyContent: isMinimized ? 'center' : 'space-between',
+          justifyContent: isMinimized ? 'center' : 'flex-start',
           height: isMinimized ? 64 : 'auto',
-          minHeight: isMinimized ? 64 : 100,
-          paddingTop: isMinimized ? 0 : 16,
-          paddingBottom: isMinimized ? 0 : 12,
-          paddingLeft: isMinimized ? 0 : 16,
-          paddingRight: isMinimized ? 0 : 8,
-          marginBottom: 8
+          minHeight: isMinimized ? 64 : 90,
+          paddingTop: isMinimized ? 0 : 12,
+          paddingBottom: isMinimized ? 0 : 8,
+          paddingLeft: isMinimized ? 0 : 12,
+          paddingRight: isMinimized ? 0 : 12,
+          marginBottom: 4,
+          position: 'relative',
+          width: '100%',
+          backgroundColor: theme.colors.primary,
         }}
       >
-        {/* App Title */}
         {!isMinimized && (
-          <Animated.View style={{ minWidth: "80%", alignItems: 'center', opacity: expandAnim, marginLeft: 8 }}>
+          <Animated.View style={{ flex: 1, alignItems: 'center', opacity: expandAnim }}>
+
             <View 
               style={{
                 backgroundColor: theme.colors.primary,
-                padding: 8,
-                borderRadius: 10,
-                alignItems: 'flex-end'
+                borderRadius: 8,
+                padding: 6,
+                alignItems: 'center',
               }}
             >
-              <Text
-                variant="displayLarge"
-                style={{
-                  color: theme.colors.onPrimary,
-                }}
-              >
-                {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <Image source={require('../../assets/favicon.png')} style={{ width: 64, height: 64 }} />
+                <Text
+                  variant="displayLarge"
+                  style={{
+                    color: theme.colors.onPrimary,
+                    fontSize: 32,
+                  }}
+                >
+                  {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
+                </Text>
+              </View>
               <Text
                 variant="titleLarge"
                 style={{
                   color: theme.colors.onPrimary,
-                  marginTop: -14,
+                  marginTop: -24,
+                  marginLeft: 90,
+                  fontSize: 18,
                 }}
               >
                 {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
@@ -653,40 +616,57 @@ const SidebarContent = ({
             </View>
           </Animated.View>
         )}
-
-        {/* Menu Toggle */}
-        {onMinimizeToggle && (
+        {onMinimizeToggle && isMinimized && (
           <IconButton
-            icon={isMinimized ? 'menu' : 'menu-open'}
+            icon="menu"
             onPress={() => onMinimizeToggle(!isMinimized)}
             size={22}
+            iconColor={theme.colors.onPrimary}
             style={{ 
               margin: 0,
-              marginTop: isMinimized ? 0 : 8
             }}
           />
         )}
+        {onMinimizeToggle && !isMinimized && (
+          <Animated.View 
+            style={{ 
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              right: 4,
+              justifyContent: 'center',
+              opacity: expandAnim,
+              zIndex: 10
+            }}
+          >
+            <IconButton
+              icon="menu-open"
+              onPress={() => onMinimizeToggle(!isMinimized)}
+              size={20}
+              iconColor={theme.colors.onPrimary}
+              style={{ 
+                margin: 0,
+              }}
+            />
+          </Animated.View>
+        )}
       </View>
-
-      {/* MENU ITEMS */}
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 8 }}
+        contentContainerStyle={{ paddingVertical: 4 }}
       >
-        {SIDEBAR_CONFIG.filter(i => i.position === 'top').map(renderItem)}
+        {ADMIN_SIDEBAR_CONFIG.filter(i => i.position === 'top').map(renderItem)}
       </ScrollView>
-
-      {/* FOOTER AREA */}
-      <View style={{ paddingBottom: 12 }}>
-        {SIDEBAR_CONFIG.filter(i => i.position === 'bottom').map(renderItem)}
+      <View style={{ paddingBottom: 8 }}>
+        {ADMIN_SIDEBAR_CONFIG.filter(i => i.position === 'bottom').map(renderItem)}
         <ThemeSwitcher expandAnim={expandAnim} isMinimized={!!isMinimized} />
         {!isMinimized && footer && (
           <Animated.View 
             style={{ 
               opacity: expandAnim, 
-              paddingHorizontal: 16, 
-              paddingVertical: 8 
+              paddingHorizontal: 12, 
+              paddingVertical: 6 
             }}
           >
             {footer}
@@ -696,8 +676,6 @@ const SidebarContent = ({
     </View>
   );
 };
-
-// --- 5. MAIN COMPONENT ---
 
 export default function Sidebar(props: SidebarProps) {
   const { isOpen, onClose, isMinimized, onMinimizeToggle } = props;
@@ -780,16 +758,27 @@ export default function Sidebar(props: SidebarProps) {
         style={{
           height: '100%',
           width: widthAnim,
-          borderRightWidth: 1,
-          borderColor: theme.colors.outlineVariant,
-          backgroundColor: theme.colors.surface,
-          overflow: 'hidden'
+          backgroundColor: theme.colors.secondary,
+          overflow: 'hidden',
+          position: 'relative'
         }}
       >
+        <View
+          style={{
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            bottom: 0,
+            width: 1,
+            backgroundColor: theme.colors.onSecondary,
+            opacity: 0.12,
+            zIndex: 1
+          }}
+        />
         <SidebarContent
           {...props}
           expandAnim={expandAnim}
-          onNavigate={(r) => { props.onNavigate(r); }}
+          onNavigate={props.onNavigate}
           onMinimizeToggle={onMinimizeToggle}
         />
       </Animated.View>
@@ -817,8 +806,11 @@ export default function Sidebar(props: SidebarProps) {
               left: 0,
               right: 0,
               bottom: 0,
-              backgroundColor: 'rgba(0, 0, 0, 0.6)',
-              opacity: fadeAnim
+              backgroundColor: theme.colors.surface,
+              opacity: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0, theme.dark ? 0.7 : 0.6]
+              })
             }}
           />
         </TouchableOpacity>
@@ -831,12 +823,22 @@ export default function Sidebar(props: SidebarProps) {
             top: 0,
             width: SIDEBAR_WIDTH,
             transform: [{ translateX: slideAnim }],
-            backgroundColor: theme.colors.surface,
-            borderRightWidth: 1,
-            borderColor: theme.colors.outlineVariant,
+            backgroundColor: theme.colors.secondary,
             elevation: 16,
           }}
         >
+          <View
+            style={{
+              position: 'absolute',
+              right: 0,
+              top: 0,
+              bottom: 0,
+              width: 1,
+              backgroundColor: theme.colors.onSecondary,
+              opacity: 0.12,
+              zIndex: 1
+            }}
+          />
           <SidebarContent
             {...props}
             expandAnim={new Animated.Value(1)}

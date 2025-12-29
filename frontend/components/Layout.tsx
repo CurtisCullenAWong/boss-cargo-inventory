@@ -1,8 +1,8 @@
-import React, { useState, ReactNode } from 'react';
+import { useState, ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Sidebar from '../components/sidebar/AdminSidebar'; 
+import Sidebar from '../components/Sidebar'; 
 import Header from '../components/Header';
 import { useSidebarContext } from '../context/SidebarContext'; 
 
