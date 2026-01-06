@@ -1,4 +1,5 @@
 import "./global.css";
+import "./frontend/utils/nativewind-config";
 import { useEffect } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";

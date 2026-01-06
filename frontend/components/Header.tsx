@@ -29,13 +29,11 @@ const Header: React.FC<HeaderProps> = ({
     className='elevation rounded-br-3xl'
       style={{
         backgroundColor: theme.colors.primary,
-        borderBottomRightRadius: 24,
       }}
     >
       <View
       className='flex-row items-center px-2.5 p-3'
       >
-
         {/* Left Side */}
         <View className='flex-row items-center flex-1'>
           {!isWeb && (
@@ -59,7 +57,7 @@ const Header: React.FC<HeaderProps> = ({
         </View>
 
         {/* Right Side */}
-        <View className='flex-row items-center'>
+        <View>
           <TouchableRipple
             onPress={onProfilePress}
             className='rounded-full'

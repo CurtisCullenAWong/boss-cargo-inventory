@@ -36,7 +36,7 @@ interface SidebarProps {
 }
 
 const IS_WEB = Platform.OS === 'web';
-const SIDEBAR_WIDTH = IS_WEB ? 300 : 280;
+const SIDEBAR_WIDTH = IS_WEB ? 250 : 200;
 const MINIMIZED_WIDTH = 80;
 const ITEM_HEIGHT = 36;
 const ITEM_MARGIN_Y = 2;
@@ -65,10 +65,12 @@ const SidebarItem = memo(({
 }) => {
   const theme = useTheme();
 
-  const bgColor = isActive ? theme.colors.primaryContainer : 'transparent';
-  const contentColor = isActive 
-    ? theme.colors.onPrimaryContainer 
-    : theme.colors.onSecondary;
+  const bgColor = isActive
+    ? theme.colors.secondaryContainer // use secondary for active items
+    : 'transparent';
+  const contentColor = isActive
+    ? theme.colors.onSecondaryContainer
+    : theme.colors.onSurfaceVariant; // neutral for inactive
 
   const iconSize = isChild ? CHILD_ICON_SIZE : ICON_SIZE;
   const labelVariant = isChild ? 'bodyMedium' : 'bodyLarge';
@@ -428,7 +430,7 @@ const ThemeSwitcher = ({
       <View 
         style={{ 
           height: 1,
-          backgroundColor: theme.colors.onSecondary,
+          backgroundColor: theme.colors.outline,
           opacity: 0.12,
           marginBottom: 8
         }} 
@@ -442,7 +444,7 @@ const ThemeSwitcher = ({
         <Text 
           variant="labelSmall" 
           style={{
-            color: theme.colors.onSecondary,
+            color: theme.colors.onBackground,
             marginBottom: 6,
             textAlign: 'center',
             letterSpacing: 0.5,
@@ -460,9 +462,9 @@ const ThemeSwitcher = ({
               secondaryContainer: theme.colors.primaryContainer,
               onSecondaryContainer: theme.colors.onPrimaryContainer,
               surface: 'transparent',
-              onSurface: theme.colors.onSecondary,
-              outline: theme.colors.onSecondary,
-              outlineVariant: theme.colors.onSecondary,
+              onSurface: theme.colors.onBackground,
+              outline: theme.colors.onBackground,
+              outlineVariant: theme.colors.onBackground,
             },
           }}
           buttons={[
@@ -557,7 +559,7 @@ const SidebarContent = ({
     <View
       style={{
         flex: 1,
-        backgroundColor: theme.colors.secondary,
+        backgroundColor: theme.colors.background,
         paddingTop: insets.top,
         paddingBottom: insets.bottom,
       }}
