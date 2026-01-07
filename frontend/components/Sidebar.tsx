@@ -36,7 +36,7 @@ interface SidebarProps {
 }
 
 const IS_WEB = Platform.OS === 'web';
-const SIDEBAR_WIDTH = IS_WEB ? 250 : 220;
+const SIDEBAR_WIDTH = IS_WEB ? 250 : 300;
 const MINIMIZED_WIDTH = 80;
 const ITEM_HEIGHT = 40;
 const ITEM_PADDING_X = 8;
@@ -529,71 +529,107 @@ const SidebarContent = ({
       }}
     >
       {/* Header Section */}
-      <View
-        className={`flex-row mb-1 w-full relative
-          ${isMinimized ? 'items-center justify-center h-16 min-h-16 p-0' : 'items-start justify-start pt-3 pb-2 px-3 min-h-[90px]'}
-        `}
-        style={{ backgroundColor: theme.colors.primary }}
-      >
-        {!isMinimized && (
-          <Animated.View 
-            className="flex-1 items-center" 
-            style={{ opacity: expandAnim }}
-          >
-            <View 
-              className="rounded-lg p-1.5 items-center mr-[20%] justify-center"
-              style={{ backgroundColor: theme.colors.primary }}
+      {!IS_WEB ? (
+        // Mobile Header
+        <View
+          className="flex-row items-center px-5 py-4 mb-2 self-center w-full justify-center"
+          style={{ backgroundColor: theme.colors.primary }}
+        >
+          <View className="justify-center my-4 mr-2">
+          <Image
+            source={require('../../assets/favicon.png')}
+            className="w-24 h-24"
+            resizeMode="contain"
+          />
+          </View>
+          <View className="justify-center flex-row align-middle">
+            <View className="justify-center mt-6 mr-1">
+            <Text
+              variant="displayLarge"
+              className="font-bold"
+              style={{ color: theme.colors.onPrimary }}
             >
-              <View className="flex-row items-center justify-center">
-                <Image 
-                  source={require('../../assets/favicon.png')} 
-                  style={{ width: 64, height: 64 }}
-                  resizeMode="contain"
-                />
+              {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
+            </Text>
+            </View>
+            <View className="justify-center mt-14">
+            <Text
+              variant="labelLarge"
+              style={{ color: theme.colors.onPrimary }}
+            >
+              {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
+            </Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        // Web / Desktop Header
+        <View
+          className={`flex-row mb-1 w-full relative
+            ${isMinimized ? 'items-center justify-center h-16 min-h-16 p-0' : 'items-start justify-start pt-3 pb-2 px-3 min-h-[90px]'}
+          `}
+          style={{ backgroundColor: theme.colors.primary }}
+        >
+          {!isMinimized && (
+            <Animated.View 
+              className="flex-1 items-center" 
+              style={{ opacity: expandAnim }}
+            >
+              <View 
+                className="rounded-lg p-1.5 items-center mr-[20%] justify-center"
+                style={{ backgroundColor: theme.colors.primary }}
+              >
+                <View className="flex-row items-center justify-center">
+                  <Image 
+                    source={require('../../assets/favicon.png')} 
+                    style={{ width: 64, height: 64 }}
+                    resizeMode="contain"
+                  />
+                  <Text
+                    variant="displayLarge"
+                    className="text-3xl ml-1"
+                    style={{ color: theme.colors.onPrimary }}
+                  >
+                    {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
+                  </Text>
+                </View>
                 <Text
-                  variant="displayLarge"
-                  className="text-3xl ml-1"
+                  variant="titleLarge"
+                  className="mt-[-7%] ml-[70%] text-lg"
                   style={{ color: theme.colors.onPrimary }}
                 >
-                  {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
+                  {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
                 </Text>
               </View>
-              <Text
-                variant="titleLarge"
-                className="mt-[-7%] ml-[70%] text-lg"
-                style={{ color: theme.colors.onPrimary }}
-              >
-                {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
-              </Text>
-            </View>
-          </Animated.View>
-        )}
-        
-        {onMinimizeToggle && isMinimized && (
-          <IconButton
-            icon="menu"
-            onPress={() => onMinimizeToggle(!isMinimized)}
-            size={22}
-            iconColor={theme.colors.onPrimary}
-            className='m-0'
-          />
-        )}
-        
-        {onMinimizeToggle && !isMinimized && (
-          <Animated.View 
-            className="absolute top-0 bottom-0 right-1 justify-center z-10"
-            style={{ opacity: expandAnim }}
-          >
+            </Animated.View>
+          )}
+          
+          {onMinimizeToggle && isMinimized && (
             <IconButton
-              icon="menu-open"
+              icon="menu"
               onPress={() => onMinimizeToggle(!isMinimized)}
-              className='m-0'
               size={22}
               iconColor={theme.colors.onPrimary}
+              className='m-0'
             />
-          </Animated.View>
-        )}
-      </View>
+          )}
+          
+          {onMinimizeToggle && !isMinimized && (
+            <Animated.View 
+              className="absolute top-0 bottom-0 right-1 justify-center z-10"
+              style={{ opacity: expandAnim }}
+            >
+              <IconButton
+                icon="menu-open"
+                onPress={() => onMinimizeToggle(!isMinimized)}
+                className='m-0'
+                size={22}
+                iconColor={theme.colors.onPrimary}
+              />
+            </Animated.View>
+          )}
+        </View>
+      )}
 
       <ScrollView
         className="flex-1 py-2"

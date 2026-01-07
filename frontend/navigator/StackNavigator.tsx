@@ -8,12 +8,8 @@ import DashboardScreen from 'frontend/screens/Dashboard';
 import ProfileScreen from 'frontend/screens/profile/Profile';
 import LoginScreen from 'frontend/screens/login/LoginScreen';
 import ItemRegistrationScreen from 'frontend/screens/inventory/ItemRegistrationScreen';
-import PurchaseRequestScreen from 'frontend/screens/inbound/PurchaseRequestScreen';
 import UserManagementScreen from 'frontend/screens/system/UserManagementScreen';
 import SupplierListScreen from 'frontend/screens/system/SupplierListScreen';
-import ReceivingReportScreen from 'frontend/screens/inbound/ReceivingReportScreen';
-import IssuanceReportScreen from 'frontend/screens/outbound/IssuanceReportScreen';
-import ReturnedItemsScreen from 'frontend/screens/outbound/ReturnedItemsScreen';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 const Drawer = createDrawerNavigator<RootStackParamList>();
@@ -22,13 +18,9 @@ const AdminDrawerNavigator = () => {
   return (
     <Drawer.Navigator screenOptions={{ headerShown: false }}>
       <Drawer.Screen name={ROUTES.Dashboard} component={DashboardScreen} />
-      <Drawer.Screen name={ROUTES.PurchaseRequest} component={PurchaseRequestScreen} />
       <Drawer.Screen name={ROUTES.UserManagement} component={UserManagementScreen} />
       <Drawer.Screen name={ROUTES.ItemRegistration} component={ItemRegistrationScreen} />
       <Drawer.Screen name={ROUTES.SupplierList} component={SupplierListScreen} />
-      <Drawer.Screen name={ROUTES.ReceivingReport} component={ReceivingReportScreen} />
-      <Drawer.Screen name={ROUTES.IssuanceReport} component={IssuanceReportScreen} />
-      <Drawer.Screen name={ROUTES.ReturnedItems} component={ReturnedItemsScreen} />
       <Drawer.Screen name={ROUTES.Profile} component={ProfileScreen} />
     </Drawer.Navigator>
   );

@@ -36,7 +36,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       [ROUTES.Login]: '',
       [ROUTES.AdminDrawer]: {
         screens: {
-          [ROUTES.Dashboard]: 'admin/dashboard',
+          [ROUTES.AdminDrawer]: 'admin/dashboard',
           [ROUTES.Profile]: 'profile',
           [ROUTES.ItemRegistration]: 'item-registration',
           [ROUTES.PurchaseRequest]: 'purchase-request',
@@ -66,7 +66,6 @@ export const navigateFromSidebar = (
   signOut?: () => void
 ) => {
   if (isLogoutRoute(route)) {
-    // Call signOut if provided (local logout only)
     if (signOut) {
       signOut();
     }
