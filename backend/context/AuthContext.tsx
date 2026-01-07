@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { supabase } from '../../backend/lib/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 interface AuthContextValue {
   session: Session | null;

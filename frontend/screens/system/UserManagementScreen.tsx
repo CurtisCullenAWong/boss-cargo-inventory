@@ -18,7 +18,7 @@ import { DrawerNavigationProp } from '@react-navigation/drawer';
 import AppLayout from '../../components/Layout';
 import { ROUTES, navigateFromSidebar, type RootStackParamList } from '../../navigator/routes';
 import { Dropdown } from 'react-native-paper-dropdown';
-import useSnackbar from '../../hooks/useSnackbar';
+import useSnackbar from '../../../backend/hooks/useSnackbar';
 
 type NavigationProp = DrawerNavigationProp<RootStackParamList, typeof ROUTES.UserManagement>;
 

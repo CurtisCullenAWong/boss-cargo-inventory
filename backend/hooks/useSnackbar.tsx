@@ -26,17 +26,15 @@ const useSnackbar = (): UseSnackbarReturn => {
         visible={visible}
         onDismiss={hideSnackbar}
         duration={3000}
-        className="rounded-lg mx-[50%] mb-[20%] z-50"
+        className="rounded-lg mx-[50%] mb-[20%] z-50 mt-2 px-2 py-1 w-[75%] max-w-[80%] items-center justify-center"
         style={{
           backgroundColor: success ? colors.primary : colors.error,
-          minWidth: '75%',
-          maxWidth: '80%',
-          alignSelf: 'center',
         }}
       >
         <Text
+          variant="bodyMedium"
+          className={`text-center ${success ? 'text-onPrimary' : 'text-onError'}`}
           style={[
-            fonts.bodyMedium,
             { color: success ? colors.onPrimary : colors.onError, textAlign: 'center' },
           ]}
         >

@@ -1,12 +1,12 @@
 import "./global.css";
-import "./frontend/utils/nativewind-config";
+import "./backend/utils/nativewind-config";
 import { useEffect } from "react";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { PaperProvider } from "react-native-paper";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
-import { ThemeProvider, useTheme } from "./frontend/context/ThemeContext";
-import { SidebarProvider } from "./frontend/context/SidebarContext";
+import { ThemeProvider, useTheme } from "./backend/context/ThemeContext";
+import { SidebarProvider } from "./backend/context/SidebarContext";
 import StackNavigator from "./frontend/navigator/StackNavigator";
 
 SplashScreen.preventAutoHideAsync();

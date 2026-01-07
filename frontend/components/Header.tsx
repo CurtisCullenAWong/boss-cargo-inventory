@@ -35,7 +35,7 @@ const Header: React.FC<HeaderProps> = ({
       className='flex-row items-center px-2.5 p-3'
       >
         {/* Left Side */}
-        <View className='flex-row items-center flex-1'>
+        <View className='flex-row items-center flex-1 ml-2'>
           {!isWeb && (
             <IconButton
               icon="menu"
@@ -47,9 +47,9 @@ const Header: React.FC<HeaderProps> = ({
 
           <Text
             variant="titleLarge"
+            className='ml-2'
             style={{
               color: theme.colors.onPrimary,
-              marginLeft: !isWeb ? 4 : 0,
             }}
           >
             {title}

@@ -18,7 +18,7 @@ import { Dropdown } from 'react-native-paper-dropdown';
 import { nanoid } from 'nanoid/non-secure';
 
 import AppLayout from '../../components/Layout';
-import useSnackbar from '../../hooks/useSnackbar';
+import useSnackbar from '../../../backend/hooks/useSnackbar';
 import {
   ROUTES,
   navigateFromSidebar,

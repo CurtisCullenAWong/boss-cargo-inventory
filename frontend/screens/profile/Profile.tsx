@@ -12,7 +12,7 @@ import {
 } from 'react-native-paper';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../../backend/context/AuthContext';
 import { isLogoutRoute } from 'frontend/navigator/routes';
 
 const ProfileScreen = () => {

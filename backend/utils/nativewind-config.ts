@@ -5,7 +5,8 @@
  */
 
 import { cssInterop } from 'nativewind';
-import { Image } from 'react-native';
+import { Image, Animated as RNAnimated } from 'react-native';
+import Animated from 'react-native-reanimated';
 import {
   Surface,
   TouchableRipple,
@@ -40,15 +41,12 @@ cssInterop(IconButton as any, { className: 'style' });
 cssInterop(FAB as any, { className: 'style' });
 cssInterop(Snackbar as any, { className: 'style' });
 cssInterop(List.Item as any, { className: 'style' });
-cssInterop(Image as any, { className: 'style' });
+// Configure React Native's Image component to work with NativeWind className
+cssInterop(Image, { className: 'style' });
 cssInterop(Portal as any, { className: 'style' });
 
-// Note: For Animated.View from react-native-reanimated, use style prop instead of className
-// on web, or wrap it with a regular View that has className support.
-// Example:
-// <View className="flex-1">
-//   <Animated.View style={animatedStyle}>
-//     ...
-//   </Animated.View>
-// </View>
-
+// Configure React Native's built-in Animated components
+cssInterop(RNAnimated.View as any, { className: 'style' });
+cssInterop(RNAnimated.Text as any, { className: 'style' });
+cssInterop(RNAnimated.Image as any, { className: 'style' });
+cssInterop(RNAnimated.ScrollView as any, { className: 'style' });

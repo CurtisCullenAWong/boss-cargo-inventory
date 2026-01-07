@@ -7,7 +7,7 @@ import {
 } from "react";
 import { Appearance, useColorScheme, Platform } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { lightTheme, darkTheme, type MD3Theme } from "../themes/paperTheme";
+import { lightTheme, darkTheme, type MD3Theme } from "../../frontend/themes/paperTheme";
 
 export type ThemeMode = "auto" | "light" | "dark";
 

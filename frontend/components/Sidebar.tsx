@@ -19,9 +19,9 @@ import {
 } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme as useAppTheme, type ThemeMode } from '../context/ThemeContext';
-import { useSidebarContext } from '../context/SidebarContext';
-import { useAuth } from '../context/AuthContext';
+import { useTheme as useAppTheme, type ThemeMode } from '../../backend/context/ThemeContext';
+import { useSidebarContext } from '../../backend/context/SidebarContext';
+import { useAuth } from '../../backend/context/AuthContext';
 import { ADMIN_SIDEBAR_CONFIG, type SidebarConfigItem } from './sidebar/adminSidebarConfig';
 import { isLogoutRoute } from '../navigator/routes';
 
@@ -36,11 +36,9 @@ interface SidebarProps {
 }
 
 const IS_WEB = Platform.OS === 'web';
-const SIDEBAR_WIDTH = IS_WEB ? 250 : 200;
+const SIDEBAR_WIDTH = IS_WEB ? 250 : 220;
 const MINIMIZED_WIDTH = 80;
-const ITEM_HEIGHT = 36;
-const ITEM_MARGIN_Y = 2;
-const ITEM_RADIUS = 8;
+const ITEM_HEIGHT = 40;
 const ITEM_PADDING_X = 8;
 const ITEM_PADDING_X_MINIMIZED = 12;
 const ICON_SIZE = 20;
@@ -66,11 +64,11 @@ const SidebarItem = memo(({
   const theme = useTheme();
 
   const bgColor = isActive
-    ? theme.colors.secondaryContainer // use secondary for active items
+    ? theme.colors.primaryContainer
     : 'transparent';
   const contentColor = isActive
-    ? theme.colors.onSecondaryContainer
-    : theme.colors.onSurfaceVariant; // neutral for inactive
+    ? theme.colors.onPrimaryContainer
+    : theme.colors.onSurface;
 
   const iconSize = isChild ? CHILD_ICON_SIZE : ICON_SIZE;
   const labelVariant = isChild ? 'bodyMedium' : 'bodyLarge';
@@ -90,31 +88,28 @@ const SidebarItem = memo(({
   });
 
   return (
-    <View style={{ marginVertical: ITEM_MARGIN_Y, marginHorizontal: 8 }}>
+    <View className="my-[2px] mx-2">
       <TouchableRipple
         onPress={onPress}
         onPressIn={onPressIn}
         borderless={false}
         disabled={isLoading}
+        className="justify-center rounded-lg overflow-hidden"
         style={{
           height: ITEM_HEIGHT,
-          justifyContent: 'center',
           backgroundColor: bgColor,
-          borderRadius: ITEM_RADIUS,
-          overflow: 'hidden'
         }}
       >
         <View
+          className="flex-row items-center"
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
             justifyContent: isMinimized ? 'center' : 'flex-start',
             paddingLeft: basePaddingLeft,
             paddingRight: basePaddingRight
           }}
         >
           {(icon || !isChild) && (
-            <View style={{ marginRight: isMinimized ? 0 : 8 }}>
+            <View className={isMinimized ? "mr-0" : "mr-3"}>
               {isLoading ? (
                 <ActivityIndicator size={iconSize} color={contentColor} />
               ) : (
@@ -127,16 +122,15 @@ const SidebarItem = memo(({
             </View>
           )}
           <Animated.View
+            className="flex-1 flex-row items-center"
             style={{
-              flex: 1,
-              flexDirection: 'row',
-              alignItems: 'center',
               opacity: textOpacity,
               display: isMinimized ? 'none' : 'flex',
             }}
           >
             <Text
               variant={labelVariant}
+              numberOfLines={1}
               style={{
                 color: contentColor,
                 flex: 1,
@@ -179,7 +173,6 @@ const MinimizedGroupOverlay = ({
 
   const defaultTop = IS_WEB ? 100 : 50;
   const defaultLeft = 80;
-
   const topPos = anchor ? Math.max(8, anchor.y - 12) : defaultTop;
   const leftPos = anchor ? Math.max(8, anchor.x - 16) : defaultLeft;
 
@@ -192,84 +185,73 @@ const MinimizedGroupOverlay = ({
       statusBarTranslucent={true}
     >
       <TouchableOpacity
-        style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+        className="absolute inset-0"
         activeOpacity={1}
         onPress={onCloseOverlay}
       />
-
-            <View
-              style={{
-                position: 'absolute',
-                top: topPos,
-                left: leftPos,
-                backgroundColor: theme.colors.surface,
-                borderRadius: 8,
-                elevation: 8,
-                shadowColor: theme.colors.onSurface,
-                shadowOpacity: theme.dark ? 0.5 : 0.2,
-                shadowRadius: 5,
-                shadowOffset: { width: 0, height: 2 },
-                minWidth: 150,
-                zIndex: 9999,
-              }}
-            >
-              <View style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
-                <Text
-                  variant="titleMedium"
-                  numberOfLines={1}
-                  style={{ color: theme.colors.onSurface, fontWeight: '600', fontSize: 14 }}
-                >
-                  {item.label}
-                </Text>
-              </View>
-              <View style={{ height: 1, backgroundColor: theme.colors.outlineVariant }} />
-              <View style={{ paddingVertical: 2 }}>
-                {item.children?.map(child => {
-                  const isChildActive = activeRoute === child.key;
-                  const childContentColor = isChildActive 
-                    ? theme.colors.onSecondaryContainer 
-                    : theme.colors.onSurface;
-                  
-                  return (
-                    <TouchableRipple
-                      key={child.key}
-                      onPress={() => {
-                        onNavigate(child.key);
-                        onCloseSidebar();
-                        onCloseOverlay();
-                      }}
-                      style={{
-                        backgroundColor: isChildActive ? theme.colors.secondaryContainer : 'transparent',
-                        paddingHorizontal: 12,
-                        height: ITEM_HEIGHT,
-                        justifyContent: 'center',
-                        borderRadius: 6,
-                        marginHorizontal: 4,
-                        marginVertical: 1,
-                      }}
-                    >
-                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <MaterialCommunityIcons
-                          name={child.icon || 'circle-small'}
-                          size={CHILD_ICON_SIZE}
-                          color={isChildActive ? theme.colors.onSecondaryContainer : theme.colors.onSurfaceVariant}
-                          style={{ marginRight: 8 }}
-                        />
-                        <Text
-                          variant="labelLarge"
-                          numberOfLines={1}
-                          style={{ color: childContentColor, fontSize: 13 }}
-                        >
-                          {child.label}
-                        </Text>
-                      </View>
-                    </TouchableRipple>
-                  );
-                })}
-              </View>
-            </View>
-        </Modal>
-    );
+      <View
+        className="absolute rounded-lg p-1 min-w-[160px] z-50 shadow-lg"
+        style={{
+          top: topPos,
+          left: leftPos,
+          backgroundColor: theme.colors.surface,
+          elevation: 8,
+        }}
+      >
+        <View className="px-3 py-2">
+          <Text
+            variant="titleMedium"
+            numberOfLines={1}
+            className="font-semibold text-sm"
+            style={{ color: theme.colors.onSurface }}
+          >
+            {item.label}
+          </Text>
+        </View>
+        <View className="h-[1px] w-full" style={{ backgroundColor: theme.colors.outlineVariant }} />
+        
+        <View className="py-1">
+          {item.children?.map(child => {
+            const isChildActive = activeRoute === child.key;
+            return (
+              <TouchableRipple
+                key={child.key}
+                onPress={() => {
+                  onNavigate(child.key);
+                  onCloseSidebar();
+                  onCloseOverlay();
+                }}
+                className="mx-1 my-[2px] rounded-md justify-center px-3"
+                style={{
+                  backgroundColor: isChildActive ? theme.colors.primaryContainer : 'transparent',
+                  height: ITEM_HEIGHT,
+                }}
+              >
+                <View className="flex-row items-center">
+                  <MaterialCommunityIcons
+                    name={child.icon || 'circle-small'}
+                    size={CHILD_ICON_SIZE}
+                    color={isChildActive ? theme.colors.onPrimaryContainer : theme.colors.onSurface}
+                    style={{ marginRight: 8 }}
+                  />
+                  <Text
+                    variant="labelLarge"
+                    numberOfLines={1}
+                    style={{ 
+                      color: isChildActive ? theme.colors.onPrimaryContainer : theme.colors.onSurface, 
+                      fontSize: 13 
+                    }}
+                  >
+                    {child.label}
+                  </Text>
+                </View>
+              </TouchableRipple>
+            );
+          })}
+        </View>
+      </View>
+    </Modal>
+  );
 };
 
 const SidebarGroup = ({ 
@@ -293,7 +275,6 @@ const SidebarGroup = ({
 
   const isExpanded = expandedGroups.has(item.key);
   const groupExpandAnim = useRef(new Animated.Value(isExpanded ? 1 : 0)).current;
-
   const isChildActive = useMemo(
     () => item.children?.some(child => child.key === activeRoute),
     [item.children, activeRoute]
@@ -330,7 +311,7 @@ const SidebarGroup = ({
 
   const contentHeight = groupExpandAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, (item.children?.length || 0) * (ITEM_HEIGHT + (ITEM_MARGIN_Y * 2))],
+    outputRange: [0, (item.children?.length || 0) * (ITEM_HEIGHT + 4)],
   });
 
   return (
@@ -419,23 +400,13 @@ const ThemeSwitcher = ({
   });
 
   return (
-    <View 
-      style={{ 
-        marginHorizontal: 8,
-        marginTop: 8,
-        marginBottom: 4,
-        paddingTop: 8
-      }}
-      >
+    <View className="mx-2 mt-2 mb-1 pt-2">
       <View 
-        style={{ 
-          height: 1,
-          backgroundColor: theme.colors.outline,
-          opacity: 0.12,
-          marginBottom: 8
-        }} 
+        className="h-[1px] mb-2 opacity-10"
+        style={{ backgroundColor: theme.colors.outline }} 
       />
       <Animated.View
+      className={'my-4'}
         style={{
           opacity: expandedOpacity,
           display: isMinimized ? 'none' : 'flex'
@@ -443,13 +414,8 @@ const ThemeSwitcher = ({
       >
         <Text 
           variant="labelSmall" 
-          style={{
-            color: theme.colors.onBackground,
-            marginBottom: 6,
-            textAlign: 'center',
-            letterSpacing: 0.5,
-            fontSize: 10
-          }}
+          className="mb-1.5 text-center tracking-widest text-[10px]"
+          style={{ color: theme.colors.onBackground }}
         >
           APP THEME
         </Text>
@@ -487,10 +453,10 @@ const ThemeSwitcher = ({
         />
       </Animated.View>
       <Animated.View
+        className="items-center"
         style={{
           opacity: collapsedOpacity,
           display: isMinimized ? 'flex' : 'none',
-          alignItems: 'center'
         }}
       >
         <IconButton
@@ -557,119 +523,92 @@ const SidebarContent = ({
 
   return (
     <View
+      className={`flex-1 w-full pt-[${insets.top}] pb-[${insets.bottom}]`}
       style={{
-        flex: 1,
         backgroundColor: theme.colors.background,
-        paddingTop: insets.top,
-        paddingBottom: insets.bottom,
       }}
     >
+      {/* Header Section */}
       <View
-        style={{
-          flexDirection: 'row',
-          alignItems: isMinimized ? 'center' : 'flex-start',
-          justifyContent: isMinimized ? 'center' : 'flex-start',
-          height: isMinimized ? 64 : 'auto',
-          minHeight: isMinimized ? 64 : 90,
-          paddingTop: isMinimized ? 0 : 12,
-          paddingBottom: isMinimized ? 0 : 8,
-          paddingLeft: isMinimized ? 0 : 12,
-          paddingRight: isMinimized ? 0 : 12,
-          marginBottom: 4,
-          position: 'relative',
-          width: '100%',
-          backgroundColor: theme.colors.primary,
-        }}
+        className={`flex-row mb-1 w-full relative
+          ${isMinimized ? 'items-center justify-center h-16 min-h-16 p-0' : 'items-start justify-start pt-3 pb-2 px-3 min-h-[90px]'}
+        `}
+        style={{ backgroundColor: theme.colors.primary }}
       >
         {!isMinimized && (
-          <Animated.View style={{ flex: 1, alignItems: 'center', opacity: expandAnim }}>
-
+          <Animated.View 
+            className="flex-1 items-center" 
+            style={{ opacity: expandAnim }}
+          >
             <View 
-              style={{
-                backgroundColor: theme.colors.primary,
-                borderRadius: 8,
-                padding: 6,
-                alignItems: 'center',
-              }}
+              className="rounded-lg p-1.5 items-center mr-[20%] justify-center"
+              style={{ backgroundColor: theme.colors.primary }}
             >
-              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <Image source={require('../../assets/favicon.png')} style={{ width: 64, height: 64 }} />
+              <View className="flex-row items-center justify-center">
+                <Image 
+                  source={require('../../assets/favicon.png')} 
+                  style={{ width: 64, height: 64 }}
+                  resizeMode="contain"
+                />
                 <Text
                   variant="displayLarge"
-                  style={{
-                    color: theme.colors.onPrimary,
-                    fontSize: 32,
-                  }}
+                  className="text-3xl ml-1"
+                  style={{ color: theme.colors.onPrimary }}
                 >
                   {process.env.EXPO_PUBLIC_SHORT_APP_NAME}
                 </Text>
               </View>
               <Text
                 variant="titleLarge"
-                style={{
-                  color: theme.colors.onPrimary,
-                  marginTop: -24,
-                  marginLeft: 90,
-                  fontSize: 18,
-                }}
+                className="mt-[-7%] ml-[70%] text-lg"
+                style={{ color: theme.colors.onPrimary }}
               >
                 {process.env.EXPO_PUBLIC_APP_ABBREVIATION}
               </Text>
             </View>
           </Animated.View>
         )}
+        
         {onMinimizeToggle && isMinimized && (
           <IconButton
             icon="menu"
             onPress={() => onMinimizeToggle(!isMinimized)}
             size={22}
             iconColor={theme.colors.onPrimary}
-            style={{ 
-              margin: 0,
-            }}
+            className='m-0'
           />
         )}
+        
         {onMinimizeToggle && !isMinimized && (
           <Animated.View 
-            style={{ 
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              right: 4,
-              justifyContent: 'center',
-              opacity: expandAnim,
-              zIndex: 10
-            }}
+            className="absolute top-0 bottom-0 right-1 justify-center z-10"
+            style={{ opacity: expandAnim }}
           >
             <IconButton
               icon="menu-open"
               onPress={() => onMinimizeToggle(!isMinimized)}
-              size={20}
+              className='m-0'
+              size={22}
               iconColor={theme.colors.onPrimary}
-              style={{ 
-                margin: 0,
-              }}
             />
           </Animated.View>
         )}
       </View>
+
       <ScrollView
-        style={{ flex: 1 }}
+        className="flex-1 py-2"
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingVertical: 4 }}
       >
         {ADMIN_SIDEBAR_CONFIG.filter(i => i.position === 'top').map(renderItem)}
       </ScrollView>
-      <View style={{ paddingBottom: 8 }}>
+
+      <View className="pb-2">
         {ADMIN_SIDEBAR_CONFIG.filter(i => i.position === 'bottom').map(renderItem)}
         <ThemeSwitcher expandAnim={expandAnim} isMinimized={!!isMinimized} />
         {!isMinimized && footer && (
           <Animated.View 
-            style={{ 
-              opacity: expandAnim, 
-              paddingHorizontal: 12, 
-              paddingVertical: 6 
-            }}
+            className="px-3 py-1.5"
+            style={{ opacity: expandAnim }}
           >
             {footer}
           </Animated.View>
@@ -754,28 +693,19 @@ export default function Sidebar(props: SidebarProps) {
     }
   }, [isOpen, shouldUseDrawerMode]);
 
+  // Desktop/Web Drawer Mode
   if (shouldUseDrawerMode) {
     return (
       <Animated.View
+        className="h-full relative overflow-hidden"
         style={{
-          height: '100%',
           width: widthAnim,
-          backgroundColor: theme.colors.secondary,
-          overflow: 'hidden',
-          position: 'relative'
+          backgroundColor: theme.colors.surface,
         }}
       >
         <View
-          style={{
-            position: 'absolute',
-            right: 0,
-            top: 0,
-            bottom: 0,
-            width: 1,
-            backgroundColor: theme.colors.onSecondary,
-            opacity: 0.12,
-            zIndex: 1
-          }}
+          className="absolute right-0 top-0 bottom-0 w-[1px] opacity-10 z-10"
+          style={{ backgroundColor: theme.colors.onSurface }}
         />
         <SidebarContent
           {...props}
@@ -787,6 +717,7 @@ export default function Sidebar(props: SidebarProps) {
     );
   }
 
+  // Mobile Modal Mode
   return (
     <Modal
       transparent
@@ -795,51 +726,38 @@ export default function Sidebar(props: SidebarProps) {
       animationType="none"
       statusBarTranslucent
     >
-      <View style={{ flex: 1, position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 50 }}>
+      <View className="flex-1 absolute inset-0 z-50">
         <TouchableOpacity
           activeOpacity={1}
           onPress={onClose}
-          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
+          className="absolute inset-0"
         >
           <Animated.View
+            className="absolute inset-0"
             style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              backgroundColor: theme.colors.surface,
+              backgroundColor: theme.colors.backdrop, // Use Paper's backdrop color if available, or fallback
               opacity: fadeAnim.interpolate({
                 inputRange: [0, 1],
-                outputRange: [0, theme.dark ? 0.7 : 0.6]
+                outputRange: [0, 1] // Backdrop usually handles its own opacity
               })
             }}
-          />
+          >
+             {/* Fallback overlay if backdrop is transparent or undefined */}
+            <View className="absolute inset-0 bg-black/60" /> 
+          </Animated.View>
         </TouchableOpacity>
 
         <Animated.View
+          className="absolute left-0 bottom-0 top-0 shadow-xl elevation-16"
           style={{
-            position: 'absolute',
-            left: 0,
-            bottom: 0,
-            top: 0,
             width: SIDEBAR_WIDTH,
             transform: [{ translateX: slideAnim }],
-            backgroundColor: theme.colors.secondary,
-            elevation: 16,
+            backgroundColor: theme.colors.surface, // Formalized: Mobile sidebar uses standard Surface
           }}
         >
           <View
-            style={{
-              position: 'absolute',
-              right: 0,
-              top: 0,
-              bottom: 0,
-              width: 1,
-              backgroundColor: theme.colors.onSecondary,
-              opacity: 0.12,
-              zIndex: 1
-            }}
+            className="absolute right-0 top-0 bottom-0 w-[1px] opacity-10 z-10"
+            style={{ backgroundColor: theme.colors.outline }}
           />
           <SidebarContent
             {...props}

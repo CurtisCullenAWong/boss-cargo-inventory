@@ -35,10 +35,11 @@ outline — The color used for borders and dividers, providing subtle separation
 //  Brand Base Tokens
 // =======================================
 const BASE = {
-    lightGold: '#FEE000',     // Primary brand color
-    sandGold:  '#FDEE7E',     // Secondary / supporting
-    darkGray:  '#292929',     // Main neutral (dark)
-    midGray:   '#787171',     // Secondary neutral
+    deepNavy:   '#082F57', // Brand anchor / strongest color
+    slateBlue:  '#264673', // Primary surface / container tone
+    darkSlate:  '#1E293B', // Main dark neutral
+    midSlate:   '#334155', // Secondary neutral
+    softSlate:  '#68778B', // Muted text / outlines
 };
 
 // =======================================
@@ -46,37 +47,41 @@ const BASE = {
 // =======================================
 export const colorConfigLight = {
     // Primary
-    primary:            BASE.lightGold,
-    onPrimary:          BASE.darkGray,
-    primaryContainer:   BASE.sandGold,
-    onPrimaryContainer: BASE.darkGray,
+    primary:            BASE.deepNavy,
+    onPrimary:          '#FFFFFF',
+    primaryContainer:   BASE.slateBlue,
+    onPrimaryContainer: '#FFFFFF',
 
     // Secondary
-    secondary:            BASE.sandGold,
-    onSecondary:          BASE.darkGray,
-    secondaryContainer:   '#FFF9C2',     
-    onSecondaryContainer: BASE.darkGray,
+    secondary:            BASE.midSlate,
+    onSecondary:          '#FFFFFF',
+    secondaryContainer:   '#D8E0EA',
+    onSecondaryContainer: BASE.darkSlate,
 
-    // Tertiary (variant of primary)
-    tertiary:            BASE.lightGold,
-    onTertiary:          BASE.darkGray,
-    tertiaryContainer:   '#FFF4A6',     
-    onTertiaryContainer: BASE.darkGray,
+    // Tertiary
+    tertiary:            '#334155',
+    onTertiary:          '#FFFFFF',
+    tertiaryContainer:   '#E2E8F0',
+    onTertiaryContainer: BASE.darkSlate,
 
-    // Error (kept red for accessibility)
+    // Error (unchanged for accessibility)
     error:               '#D32F2F',
     onError:             '#FFFFFF',
     errorContainer:      '#F9DEDC',
     onErrorContainer:    '#5B1212',
+
     // Surfaces
-    background:          '#FFFEF7',      
-    onBackground:        BASE.darkGray,
+    background:          '#F8FAFC',
+    onBackground:        BASE.darkSlate,
+
     surface:             '#FFFFFF',
-    onSurface:           BASE.darkGray,
-    surfaceVariant:      '#FAF4D7',      
-    onSurfaceVariant:    BASE.midGray,
+    onSurface:           BASE.darkSlate,
+
+    surfaceVariant:      '#E5EAF0',
+    onSurfaceVariant:    BASE.midSlate,
+
     // Outline / borders
-    outline:             BASE.midGray,
+    outline:             BASE.softSlate,
 };
 
 
@@ -85,22 +90,22 @@ export const colorConfigLight = {
 // =======================================
 export const colorConfigDark = {
     // Primary
-    primary:            '#FEE85A',      
-    onPrimary:          BASE.darkGray,
-    primaryContainer:   '#C7B200',      
-    onPrimaryContainer: '#FFF9D9',
+    primary:            '#4F83C2',       // Lifted blue for contrast
+    onPrimary:          '#FFFFFF',
+    primaryContainer:   BASE.deepNavy,
+    onPrimaryContainer: '#E6F0FF',
 
     // Secondary
-    secondary:            BASE.sandGold,
-    onSecondary:          BASE.darkGray,
-    secondaryContainer:   '#C7B763',    
-    onSecondaryContainer: '#FFF9D9',
+    secondary:            BASE.midSlate,
+    onSecondary:          '#FFFFFF',
+    secondaryContainer:   BASE.slateBlue,
+    onSecondaryContainer: '#E6F0FF',
 
-    // Tertiary (variant)
-    tertiary:            '#FEE85A',
-    onTertiary:          BASE.darkGray,
-    tertiaryContainer:   '#C7B200',
-    onTertiaryContainer: '#FFF9D9',
+    // Tertiary
+    tertiary:            '#68778B',
+    onTertiary:          '#FFFFFF',
+    tertiaryContainer:   '#2A3A4F',
+    onTertiaryContainer: '#E6EAF0',
 
     // Error
     error:               '#D32F2F',
@@ -109,15 +114,15 @@ export const colorConfigDark = {
     onErrorContainer:    '#5B1212',
 
     // Surfaces
-    background:          '#1A1A1A',     
-    onBackground:        '#F2F2F2',
+    background:          BASE.darkSlate,
+    onBackground:        '#E5EAF0',
 
-    surface:             BASE.darkGray,
-    onSurface:           '#F2F2F2',
+    surface:             '#243044',
+    onSurface:           '#E5EAF0',
 
-    surfaceVariant:      '#3A3A3A',
-    onSurfaceVariant:    '#C0C0C0',
+    surfaceVariant:      '#2F3E55',
+    onSurfaceVariant:    BASE.softSlate,
 
     // Outline
-    outline:             BASE.midGray,
+    outline:             BASE.softSlate,
 };

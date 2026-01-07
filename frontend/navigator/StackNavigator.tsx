@@ -2,7 +2,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { ROUTES, linkingConfig, type RootStackParamList } from './routes';
-import { AuthProvider, useAuth } from '../context/AuthContext';
+import { AuthProvider, useAuth } from '../../backend/context/AuthContext';
 
 import DashboardScreen from 'frontend/screens/Dashboard';
 import ProfileScreen from 'frontend/screens/profile/Profile';

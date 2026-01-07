@@ -1,10 +1,9 @@
 import { useState, ReactNode } from 'react';
 import { ScrollView, View } from 'react-native';
 import { useTheme } from 'react-native-paper';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Sidebar from '../components/Sidebar'; 
 import Header from '../components/Header';
-import { useSidebarContext } from '../context/SidebarContext'; 
+import { useSidebarContext } from '../../backend/context/SidebarContext'; 
 
 /**
  * Props for the AppLayout component.
@@ -29,7 +28,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { isMinimized, setIsMinimized } = useSidebarContext();
   const theme = useTheme();
-  const insets = useSafeAreaInsets();
 
   return (
     <View 
@@ -54,12 +52,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({
           onProfilePress={onProfilePress}
         />
         <ScrollView 
-          className="flex-1"
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-            paddingTop: 24,
-            paddingBottom: Math.max(insets.bottom, 40),
-          }}
+          className="flex-1 py-2 px-4 mt-2"
         >
           {children} 
         </ScrollView>
